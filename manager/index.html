@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <h1>
+            This is the Manager for the websocket sandbox
+        </h1>
+        <p>
+            Send a message to all of the clients
+        </p>
+        <p id = "response">This should be "Socket open"</p>
+        <form action="/action_page.php">
+            Send Message: <input type="text" name="fname"><br>
+            <input type="submit" value="Submit">
+        </form>
+        <script>
+            let socket = new WebSocket("wss://i55dlcdw3e.execute-api.us-east-1.amazonaws.com/test")
+            socket.onopen = function(e) {
+                var response = document.getElementById("response")
+                response.innerHTML = "Socket open"
+                console.log("Opened scoket")
+                socket.close()
+            }
+        </script>
+    </head>
+    
+</html>
