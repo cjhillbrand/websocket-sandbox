@@ -8,18 +8,33 @@
             Send a message to all of the clients
         </p>
         <p id = "response">This should be "Socket open"</p>
-        <form action="/action_page.php">
-            Send Message: <input type="text" name="fname"><br>
-            <input type="submit" value="Submit">
-        </form>
+        <p id = "payload"> Current Payload </p>
+        <input type="text" id="message" name="fname">
+        <button onclick="dispatchMessage()">Submit</button>
         <script>
-            let socket = new WebSocket("wss://i55dlcdw3e.execute-api.us-east-1.amazonaws.com/test")
+
+            let socket = new WebSocket("wss://2vbwss9q2g.execute-api.us-east-1.amazonaws.com/default")
             socket.onopen = function(e) {
                 var response = document.getElementById("response")
                 response.innerHTML = "Socket open"
-                console.log("Opened scoket")
-                socket.close()
+                console.log("Opened socket")
             }
+            
+            function dispatchMessage() {
+                const message = document.getElementById("message").innerHTML
+                console.log("trying to send event")
+                socket.send({
+                    action:"default",
+                    message:message
+                })
+             }
+             
+             socket.onmessage = function(e) {
+                var response = document.getElementById("response")
+                response.innerHTML = "Message delivered"
+                console.log("message received")
+            }
+            document.getElementById.innerHTML = socket.bufferedAmount
         </script>
     </head>
     

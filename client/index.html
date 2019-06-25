@@ -6,6 +6,17 @@
         </h1>
     </head>
     <body>
-        The manager said:
+        <p id="variableMessage">
+            The manager said:
+        </p>
     </body>
+    <script>
+        let socket = new WebSocket("wss://2vbwss9q2g.execute-api.us-east-1.amazonaws.com/default")
+        socket.onopen = function(e) {
+            console.log("Opened socket")
+        }
+        socket.onmessage = function(e) {
+            console.log("message received")
+        }
+    </script>
 </html>
