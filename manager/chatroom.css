@@ -1,0 +1,70 @@
+.header {
+    text-align: center;
+}
+
+#container {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    width: 900px;
+    padding: 10px;
+}
+
+#left {
+    float: left;
+    width: 350px;
+    margin-top: 20px;
+    text-align: left;
+}
+
+.label {
+    padding-bottom: 25;
+    font-size: 22px;
+}
+
+#left-4 {
+    width: 80%;
+    height: 40px;
+    text-align: left
+}
+
+#right {
+    float: left;
+    width: 550px;
+
+}
+
+#right-left {
+    float: left;
+    width: 49%;
+    padding-right: 2.5px;
+}
+
+#right-right {
+    float: right;
+    width: 49%;
+    padding-left: 2.5px;
+}
+
+
+#footer {
+    clear: both
+}
+
+
+.table {
+    text-align: left;
+    border-style: solid;
+    border-width: 2px;
+    border-color: black;
+    padding: 0;
+}
+.table li {
+    list-style: none; 
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+    padding-left: 4px;
+    padding-top: 10px;
+    padding-bottom: 2px;
+}

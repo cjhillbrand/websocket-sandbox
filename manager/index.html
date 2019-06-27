@@ -1,41 +1,100 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <h1>
-            This is the Manager for the websocket sandbox
-        </h1>
-        <p>
-            Send a message to all of the clients
-        </p>
-        <p id = "response">This should be "Socket open"</p>
-        <p id = "payload"> Current Payload </p>
-        <input type="text" id="message" name="fname">
-        <button onclick="dispatchMessage()">Submit</button>
-        <script>
-
-            let socket = new WebSocket("wss://2vbwss9q2g.execute-api.us-east-1.amazonaws.com/default")
-            socket.onopen = function(e) {
-                var response = document.getElementById("response")
-                response.innerHTML = "Socket open"
-                console.log("Opened socket")
-            }
-            
-            function dispatchMessage() {
-                const message = document.getElementById("message").innerHTML
-                console.log("trying to send event")
-                socket.send({
-                    action:"default",
-                    message:message
-                })
-             }
-             
-             socket.onmessage = function(e) {
-                var response = document.getElementById("response")
-                response.innerHTML = "Message delivered"
-                console.log("message received")
-            }
-            document.getElementById.innerHTML = socket.bufferedAmount
-        </script>
+        <title>Websocket-Chatroom</title>
+        <link rel="stylesheet" type="text/css" href="chatroom.css"/>
     </head>
-    
+    <body>
+        <div class="header">
+            <h1>
+                Welcome to the websocket-chatroom
+            </h1>
+            <h2>
+                Feel free to join a chat room and talk to other
+                websocket afficonados.
+            </h2>
+        </div>
+        <div class="header">
+            <label class="label">Please enter a name:</label>
+            <input type="text" id="name"/>
+        </div>
+        <div id="container">
+            <div id="left">
+                <label class="label">You are in room: </label>
+                <label class="label"></label>
+                <br/>
+                <label class="label">Type a message here:</label>
+                <br/>
+                <textarea rows="3" type="text" id="left-4" fname="message"></textarea>
+                <br/>
+                <button>Submit</button>
+                <br/><br/>
+                <label class="label">Leave Room?</label>
+                <br/>
+                <button>Yes</button>
+            </div>
+            <div id="right">
+                <div id="right-left">
+                    <h3 class="header">
+                        Websocket Chatrooms
+                    </h3 class="header">
+                    <ul id="rooms" class="table">
+                        <li>one</li>
+                        <li>one</li>
+                        <li>one</li>
+                        <li>one</li>
+                    </ul>
+                </div>
+                <div id="right-right">
+                    <h3 class="header">
+                        Messages
+                    </h3>
+                    <ul id="currentmessages" class="table">
+                        <li>one</li>
+                        <li>one</li>
+                        <li>one</li>
+                        <li>one</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div id="footer">
+            <small>Powered by PSA Wizards</small>
+        </div>
+        <script src="chatroom.js"></script>
+        <script src="../resources/awsconfig.js"></script>
+        <script>
+            var chatRoom = new ChatRoom();
+            const connection = chatRoom.connect();
+            // How do i get around this referencing semantics
+            // I want to declare these listeners in chat room.
+            let messageListener = function(e) {
+                var ul = document.getElementById("dynamic-list");
+                var li = document.createElement("li");
+                console.log(e)
+                // var candidate = 
+                // li.setAttribute('id',candidate.value);
+                // li.appendChild(document.createTextNode(candidate.value));
+                // ul.appendChild(li);    
+            }
+            let closeListener = function(e) {
+                console.log(e)
+                var response =document.getElementById("response")
+                response.innerHTML = "Socket closed :("
+                console.log("Closed")
+            }
+            if (connection.success) {
+                chatRoom.setMessageListener(messageListener);
+                chatRoom.setCloseListener(closeListener);
+            }
+            // Is there a cleaner way such that I dont have to wrap these...            
+            function dispatchMessage() {
+                chatRoom.sendMessage(document.getElementById("message").value);
+            }
+            function closeSession() {
+                chatRoom.leaveRoom();
+            }
+        </script>
+    </body>
+
 </html>
