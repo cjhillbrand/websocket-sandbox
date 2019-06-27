@@ -86,6 +86,8 @@
             if (connection.success) {
                 chatRoom.setMessageListener(messageListener);
                 chatRoom.setCloseListener(closeListener);
+            } else {
+                // Display an error message
             }
             // Is there a cleaner way such that I dont have to wrap these...            
             function dispatchMessage() {
