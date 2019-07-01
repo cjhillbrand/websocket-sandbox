@@ -23,7 +23,7 @@
         </div>
         <div id="container">
             <div id="left">
-                <label class="label">You are in room: </label>
+                <label id="room-id" class="label">You are in room: </label>
                 <label class="label"></label>
                 <br/>
                 <label class="label">Type a message here:</label>
@@ -132,6 +132,7 @@
                     value: document.getElementById("newroom").value
                 });
                 // Should they join the room as well?
+                document.getElementById("room-id").innerHTML = "You are in room: " + room;
             }
 
             function joinChatRoom(room) {
@@ -139,12 +140,12 @@
                     action: _routes.JOIN,
                     value: room
                 });
-
                 // This isnt working... but who knows
                 var rooms = [...document.getElementsByClassName("message-room-button")];
                 rooms.forEach(element => {
                     element.disabled = false;
                 });
+                document.getElementById("room-id").innerHTML = "You are in room: " + room;
             }
 
             function leaveRoom() {

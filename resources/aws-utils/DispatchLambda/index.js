@@ -1,5 +1,4 @@
 var AWS = require('aws-sdk')
-var https = require('http')
 AWS.config.update({region: 'us-east-1'})
 
 /**
@@ -16,6 +15,7 @@ exports.handler = async (event) => {
     var dynamodb = new AWS.DynamoDB();
     let room, user;
     try {
+        // Can I make this a batch request? Well ya you can idiot, just do it... but after we migrate to db document client
         room = await dynamodb.getItem({TableName: "id-room", Key: {"ID": {S: event.requestContext.connectionId}}}).promise();
         user = await dynamodb.getItem({TableName: "client-records", Key: {"ID": {S: event.requestContext.connectionId}}}).promise();
     } catch(e) {
