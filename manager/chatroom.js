@@ -8,7 +8,7 @@ class ChatRoom {
             messages: [],
             socket: null
         };
-        window.addEventListener("unload", this.closeConnection.bind(this));
+        window.addEventListener("beforeunload", this.closeConnection.bind(this));
     }
     connect() {
         let result = {

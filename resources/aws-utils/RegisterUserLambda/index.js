@@ -39,6 +39,7 @@ exports.handler = async(event) => {
     let rooms = readResponse.Items.map(function(elem) {
         return elem.Room.S;
     })
+    rooms = [...new Set(rooms)];
     console.log(rooms)
     var responseBody = {
         "type": "signup",

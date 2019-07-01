@@ -53,10 +53,6 @@
                         Messages
                     </h3>
                     <ul id="currentmessages" class="table messages">
-                        <li class="list-group-item">one</li>
-                        <li class="list-group-item">one</li>
-                        <li class="list-group-item">one</li>
-                        <li class="list-group-item">one</li>
                     </ul>
                 </div>
             </div>
@@ -92,9 +88,9 @@
                     });
                 } else { // type == "message"
                     appendList({
-                        list: "currentmessage",
-                        html: "replace w message",
-                        value: "replace w message"
+                        list: "currentmessages",
+                        html: data.user + " said: " + data.message,
+                        value: data.user + data.message
                     });
                 }   
             }
@@ -139,10 +135,11 @@
             }
 
             function joinChatRoom(room) {
-                // chatRoom.sendWebsocketMessage({
-                //     action: _routes.JOIN,
-                //     value: room
-                // });
+                chatRoom.sendWebsocketMessage({
+                    action: _routes.JOIN,
+                    value: room
+                });
+
                 // This isnt working... but who knows
                 var rooms = [...document.getElementsByClassName("message-room-button")];
                 rooms.forEach(element => {
