@@ -22,7 +22,7 @@
     font-size: 22px;
 }
 
-#left-4 {
+#message-box {
     width: 80%;
     height: 40px;
     text-align: left
@@ -59,12 +59,24 @@
     border-color: black;
     padding: 0;
 }
+
+.messages li{
+    padding: 5px;
+}
+
 .table li {
     list-style: none; 
     border-style: solid;
     border-width: 1px;
     border-color: black;
-    padding-left: 4px;
-    padding-top: 10px;
-    padding-bottom: 2px;
+
+}
+
+
+.table li button {
+    border: 1px;
+    background-color: lightBlue;
+    height:30px;
+    width:265px;
+    cursor:pointer;
 }

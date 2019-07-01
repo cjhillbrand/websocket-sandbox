@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <script src="chatroom.js"></script>
+        <script src="../resources/awsconfig.js"></script>
         <title>Websocket-Chatroom</title>
         <link rel="stylesheet" type="text/css" href="chatroom.css"/>
     </head>
@@ -17,6 +19,7 @@
         <div class="header">
             <label class="label">Please enter a name:</label>
             <input type="text" id="name"/>
+            <button id="sign-up-button" onclick="signUpUser()">Register</button>
         </div>
         <div id="container">
             <div id="left">
@@ -25,35 +28,35 @@
                 <br/>
                 <label class="label">Type a message here:</label>
                 <br/>
-                <textarea rows="3" type="text" id="left-4" fname="message"></textarea>
+                <textarea rows="3" type="text" id="message-box" fname="message"></textarea>
                 <br/>
-                <button>Submit</button>
+                <button id="send-message-button" onclick="dispatchMessage()" disabled>Submit</button>
                 <br/><br/>
                 <label class="label">Leave Room?</label>
                 <br/>
-                <button>Yes</button>
+                <button id="leave-room-button" onclick="leaveRoom()" disabled>Yes</button>
             </div>
             <div id="right">
                 <div id="right-left">
                     <h3 class="header">
                         Websocket Chatrooms
                     </h3 class="header">
-                    <ul id="rooms" class="table">
-                        <li>one</li>
-                        <li>one</li>
-                        <li>one</li>
-                        <li>one</li>
-                    </ul>
+                    <ul id="rooms" class="table"></ul>
+                    <div>
+                        <label class="label">Create another room?</label>
+                        <input type="text" id="newroom"/>
+                        <button id="create-new-room-button" onclick="createNewRoom()" disabled>Submit</button>
+                    </div>
                 </div>
                 <div id="right-right">
                     <h3 class="header">
                         Messages
                     </h3>
-                    <ul id="currentmessages" class="table">
-                        <li>one</li>
-                        <li>one</li>
-                        <li>one</li>
-                        <li>one</li>
+                    <ul id="currentmessages" class="table messages">
+                        <li class="list-group-item">one</li>
+                        <li class="list-group-item">one</li>
+                        <li class="list-group-item">one</li>
+                        <li class="list-group-item">one</li>
                     </ul>
                 </div>
             </div>
@@ -61,40 +64,114 @@
         <div id="footer">
             <small>Powered by PSA Wizards</small>
         </div>
-        <script src="chatroom.js"></script>
-        <script src="../resources/awsconfig.js"></script>
         <script>
             var chatRoom = new ChatRoom();
-            const connection = chatRoom.connect();
+            const connection = chatRoom.connect(); 
+            
+            
             // How do i get around this referencing semantics
             // I want to declare these listeners in chat room.
             let messageListener = function(e) {
-                var ul = document.getElementById("dynamic-list");
-                var li = document.createElement("li");
-                console.log(e)
-                // var candidate = 
-                // li.setAttribute('id',candidate.value);
-                // li.appendChild(document.createTextNode(candidate.value));
-                // ul.appendChild(li);    
+                console.log(e);
+                let data = JSON.parse(e.data);
+                if (data.type == "signup") {
+                    // Need to create an internal data structure that keeps track
+                    // of the rooms so that we don't add duplicates.
+                    /**
+                     * TODO: 
+                     * 1. Need to create an internal data structure that keeps track
+                     * of the rooms so that we don't add duplicates.
+                     * 2. Need to figure out a good defualt UI before the user has logged in.
+                     */
+                    data.rooms.map(elem => {
+                        appendList({
+                            list: "rooms",
+                            html: "<button class=\"message-room-button\" onClick=joinChatRoom(\"" + elem + "\") > " + elem + "</button>",
+                            value: elem
+                        });
+                    });
+                } else { // type == "message"
+                    appendList({
+                        list: "currentmessage",
+                        html: "replace w message",
+                        value: "replace w message"
+                    });
+                }   
             }
+
             let closeListener = function(e) {
                 console.log(e)
-                var response =document.getElementById("response")
-                response.innerHTML = "Socket closed :("
                 console.log("Closed")
             }
-            if (connection.success) {
-                chatRoom.setMessageListener(messageListener);
-                chatRoom.setCloseListener(closeListener);
-            } else {
-                // Display an error message
-            }
-            // Is there a cleaner way such that I dont have to wrap these...            
+            chatRoom.setMessageListener(messageListener);
+            chatRoom.setCloseListener(closeListener);
+            
+            // Is there a cleaner way such that I dont have to wrap these...
+            // If we can move these functions to another file that would be ideal...
             function dispatchMessage() {
-                chatRoom.sendMessage(document.getElementById("message").value);
+                chatRoom.sendWebsocketMessage({
+                    action: _routes.DISPATCH,
+                    value: document.getElementById("message-box").value
+                });
             }
+
             function closeSession() {
-                chatRoom.leaveRoom();
+                chatRoom.exit();
+            }
+
+            function signUpUser() {
+                // Connection needs to return an array of rooms
+                chatRoom.sendWebsocketMessage({
+                    action: _routes.REGISTER, 
+                    value: document.getElementById("name").value //clear after submit?
+                });
+                let buttons = ["leave-room-button", "sign-up-button", "send-message-button", 
+                                "create-new-room-button"];
+                buttons.map(label => {toggle(label)});
+            }
+
+            function createNewRoom() {
+                chatRoom.sendWebsocketMessage({
+                    action: _routes.NEW_ROOM,
+                    value: document.getElementById("newroom").value
+                });
+                // Should they join the room as well?
+            }
+
+            function joinChatRoom(room) {
+                // chatRoom.sendWebsocketMessage({
+                //     action: _routes.JOIN,
+                //     value: room
+                // });
+                // This isnt working... but who knows
+                var rooms = [...document.getElementsByClassName("message-room-button")];
+                rooms.forEach(element => {
+                    element.disabled = false;
+                });
+            }
+
+            function leaveRoom() {
+                chatRoom.sendWebsocketMessage({
+                    action: _routes.LEAVE,
+                    value: _routes.LEAVE
+                });
+                toggle("room-button")
+            }
+
+            function appendList(config) {
+                var ul = document.getElementById(config.list);
+                var li = document.createElement("li");
+                li.innerHTML = config.html;
+                ul.appendChild(li);
+            }
+            
+            // The toggle function isnt working need 
+            // to figure that out
+            function toggle(elem) {
+                console.log(document.getElementById(elem).disabled);
+                document.getElementById(elem).disabled = !document.getElementById(elem).disabled;
+                console.log(document.getElementById(elem).disabled);
+
             }
         </script>
     </body>
