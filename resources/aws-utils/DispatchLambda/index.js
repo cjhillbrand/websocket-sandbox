@@ -10,72 +10,61 @@ AWS.config.update({region: 'us-east-1'})
  * request)
  */
 exports.handler = async (event) => {
-    //const {name, value, room} = event.body;
-    console.log(event)
     const { value, room, name } = JSON.parse(event.body);
-    var dynamodb = new AWS.DynamoDB();
+    var db = new AWS.DynamoDB.DocumentClient();
+    var returnVal = {
+        statusCode: 200,
+        body: {}
+    };
+
+    const scanParams = {
+        TableName : "id-room",
+        ExpressionAttributeValues: {":r": room},
+        FilterExpression: "Room = :r",
+        ProjectionExpression: "ID"
+    };
+
+    const scan = await db.scan(scanParams, function(err, data) {
+        if (err) {
+            console.log(err);
+            returnVal.body.scanStatus = "SCAN-ERROR";
+            returnVal.body = JSON.stringify(returnVal.body);
+            return returnVal;
+        }
+        else returnVal.body.scanStatus = "SCAN-SUCCESS";
+    }).promise();    
+    
+    connectionData = scan.Items.map(elem => {
+        return elem.ID;
+    });
 
     var message = JSON.stringify({
         message: value, 
         user: name,
         type: "client-message"
     });
-    // Gather all of the connectionIDs that are linked to the room.
-    const readResponse = await getConnectionIds(dynamodb, room);
-    let connectionData = readResponse.Items.map(function(elem) {
-        return elem.ID.S;
-    })
-    // Now we have to dispatch a message to all of the connectionIDs
+
     const apigwManagementApi = new AWS.ApiGatewayManagementApi({
         apiVersion: '2018-11-29',
         endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
     });
+
     const postCalls = connectionData.map(async ( connectionId ) => {
         try {
-          await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise();
+            await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise();
         } catch (e) {
-          if (e.statusCode === 410) {
-            console.log(`Found stale connection, deleting ${connectionId}`);
-            await dynamodb.deleteItem({TableName: "id-room", Key: { "ID": {S :connectionId }}})
-            await dynamodb.deleteItem({TableName: "client-records", Key: { "ID": {S: connectionId }}})
-          } else {
-            throw e;
-          }
+            if (e.statusCode === 410) {
+                console.log(`Found stale connection, deleting ${connectionId}`);
+                await db.delete({TableName: "id-room", Key: { ID: connectionId }}).promise();
+                await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
+            } else {
+                returnVal.body.dispatchStatus = "FAIL";
+                throw e;
+            }
         }
     });
     Promise.all(postCalls);
-
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify('Body Sent'),
-    };
-    return response;
+    returnVal.body.dispatchStatus = "SUCCESS";
+    returnVal.body = JSON.stringify(returnVal.body);
+    return returnVal;
 };
-
-function getConnectionIds(dynamodb, room) {
-    var params = {
-        TableName : "id-room",
-        ExpressionAttributeNames: {
-            "#R": "Room",
-            "#ID": "ID"
-        },
-        ExpressionAttributeValues: {
-            ":r" : {
-                S: room
-            }
-        },
-        FilterExpression: "#R = :r",
-        ProjectionExpression: "#ID",
-    };
-    return new Promise(function(resolve, reject) {
-        dynamodb.scan(params, function(err, data) {
-            if (err) {
-                console.log(err);
-                reject(err);
-            } else {
-                console.log(data);
-                resolve(data);
-            }
-        })
-    })
-}
