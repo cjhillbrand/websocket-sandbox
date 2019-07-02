@@ -6,6 +6,7 @@ echo "3) JoinRoom"
 echo "4) Dispatch"
 echo "5) Disconnect"
 echo "6) CreateRoom"
+echo "7) LeaveRoom"
 read number
 case $number in
     1)
@@ -31,6 +32,10 @@ case $number in
     6)
         path="CreateRoomLambda"
         func="createRoom"
+        ;;
+    7)
+        path="LeaveRoomLambda"
+        func="leaveRoom"
 esac
 
 echo "deploying lambda ${path} to function ${func}"

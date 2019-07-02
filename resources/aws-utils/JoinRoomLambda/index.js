@@ -29,6 +29,4 @@ exports.handler = async (event) => {
     }).promise();
 
     return returnVal;
-
-
 }

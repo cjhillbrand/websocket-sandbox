@@ -7,9 +7,9 @@ const AWS_CONFIG = {
 const _routes = {
     JOIN: "join-room",
     DISPATCH: "dispatch",
-    LEAVE: "leave",
+    LEAVE: "leave-room",
     REGISTER: "register",
-    NEW_ROOM: "new-room"
+    NEW_ROOM: "new-room",
 }
 
 const _message_types = {

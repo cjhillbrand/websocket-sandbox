@@ -82,8 +82,7 @@
                     action: _routes.REGISTER, 
                     value: document.getElementById("name").value //clear after submit?
                 });
-                let buttons = ["leave-room-button", "sign-up-button", 
-                                "create-new-room-button"];
+                let buttons = ["sign-up-button", "create-new-room-button"];
                 buttons.map(label => {toggle(label)});
                 chatRoom.update({name: document.getElementById("name").value});
             }
@@ -95,6 +94,9 @@
                     value: room
                 });
                 // Should they join the room as well?
+                chatRoom.update({room: room})
+                //let buttons = ["send-message-button, create-new-room-button", "leave-room-button"];
+                //buttons.map(label => {toggle(label)});
                 document.getElementById("room-id").innerHTML = "You are in room: " + room;
             }
 
@@ -104,12 +106,10 @@
                     value: room
                 });
                 // This isnt working... but who knows
-                var rooms = [...document.getElementsByClassName("message-room-button")];
-                rooms.forEach(element => {
-                    element.disabled = false;
-                });
+                toggleRoom();
                 chatRoom.update({room: room});
-                toggle("send-message-button");
+                let buttons = ["send-message-button", "leave-room-button"];
+                buttons.map(label => toggle(label));
                 document.getElementById("room-id").innerHTML = "You are in room: " + room;
             }
 
@@ -118,17 +118,21 @@
                     action: _routes.LEAVE,
                     value: _routes.LEAVE
                 });
-                toggle("room-button")
+                toggleRoom();
+                document.getElementById("room-id").innerHTML = "You are in room: ";
             }            
             // The toggle function isnt working need 
             // to figure that out
             function toggle(elem) {
-                console.log(document.getElementById(elem).disabled);
                 document.getElementById(elem).disabled = !document.getElementById(elem).disabled;
-                console.log(document.getElementById(elem).disabled);
-
             }
 
+            function toggleRoom() {
+                var rooms = [...document.getElementsByClassName("message-room-button")];
+                rooms.map(element => {
+                    element.disabled = !element.disabled;
+                });
+            }
             function appendList(config) {
                 var ul = document.getElementById(config.list);
                 var li = document.createElement("li");

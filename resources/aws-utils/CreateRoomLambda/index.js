@@ -10,6 +10,7 @@ AWS.config.update({region: 'us-east-1'})
  */
 
 exports.handler = async (event) => {
+    console.log(' EVENT:',event);
     const { value } = JSON.parse(event.body);
     const connectionId = event.requestContext.connectionId;
     const db = new AWS.DynamoDB.DocumentClient();
@@ -22,30 +23,28 @@ exports.handler = async (event) => {
         TableName: "id-room",
         Item: {'ID': connectionId,'Room': value}
     }
-
-    const write = await db.put(writeParam, function(err, data) {
-        if (err) returnVal.body.read = "FAIL";
-        else returnVal.body.read = "SUCCESS";
-    }).promise();
-
+    const write = db.put(writeParam);
+    
+    let connectionData;
     const scanParams = {
         TableName : "client-records"
     };
 
-    const scan = await db.scan(scanParams, function(err, data) {
-        if (err) {
-            console.log(err);
-            returnVal.body.scanStatus = "FAIL";
-            returnVal.body = JSON.stringify(returnVal.body);
-            return returnVal;
-        }
-        else returnVal.body.scanStatus = "SUCCESS";
-    }).promise();
-    console.log(returnVal);
-    connectionData = scan.Items.map(elem => {
-        return elem.ID;
+    const scan = await db.scan(scanParams).promise()
+    .then(val => {
+        returnVal.body.scan = "SUCCESS";
+        console.log("INSIDE SCAN: ", val);
+        connectionData = val.Items.map(elem => {
+            return elem.ID;
+        });
+    })
+    .catch(err => {
+        returnVal.body.scan = "FAIL";
+        throw err;
     });
 
+    console.log(' RETURNVAL:' , returnVal);
+    
     const message = JSON.stringify({
         type: "single-room",
         message: value
@@ -57,21 +56,22 @@ exports.handler = async (event) => {
     });
 
     const postCalls = connectionData.map(async ( connectionId ) => {
-        try {
-            await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise();
-        } catch (e) {
+        console.log('POSTCALLS:', connectionId);
+        await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise()
+        .catch(e => {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionId}`);
-                await db.delete({TableName: "id-room", Key: { ID: connectionId }}).promise();
-                await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
+                db.delete({TableName: "id-room", Key: { ID: connectionId }});
+                db.delete({TableName: "client-records", Key: { ID: connectionId }});
             } else {
                 returnVal.body.dispatchStatus = "FAIL";
                 throw e;
             }
-        }
+        });
     });
-    Promise.all(postCalls);
+    //Promise.all(postCalls);
     returnVal.body.dispatchStatus = "SUCCESS";
     returnVal.body = JSON.stringify(returnVal.body);
+    console.log(' RETURNVAL - FINAL:' , returnVal);
     return returnVal;
 }

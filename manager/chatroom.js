@@ -20,7 +20,7 @@ class ChatRoom {
         if (this.state.connected)
             result.message = "Already Connected to Websocket"; // Factor out error message
         try {
-            this.state.socket = new WebSocket(AWS_CONFIG.websocket);
+            this.state.socket = new WebSocket(AWS_CONFIG.websocket, "upgrade");
         } catch (e) {
             result.message = e;
             return result;
@@ -65,7 +65,7 @@ class ChatRoom {
                 let elem = data.message;
                 appendList({
                     list: "rooms",
-                    html: "<button class=\"message-room-button\" onClick=joinChatRoom(\"" + elem + "\") > " + elem + "</button>",
+                    html: "<button class=\"message-room-button\" onClick=joinChatRoom(\"" + elem + "\") disabled=true> " + elem + "</button>",
                     value: elem
                 })
             } else if (data.type == _message_types.MESSAGE) { // type == "message"
@@ -77,6 +77,7 @@ class ChatRoom {
             }   
         };
         this.state.socket.onmessage = messageListener;
+        window.addEventListener("message", this.state.socket.onmessage.bind(this), false);
     }
     update(param) {
         if (param.room) this.state.room = param.room;
@@ -87,6 +88,11 @@ class ChatRoom {
         this.state.socket.onclose = function(e) {
             console.log(e);
             console.log("Closed");
+        }
+    }
+    setErrorListener() {
+        this.state.socket.onerror = function(e) {
+            console.log(e);
         }
     }
     closeConnection() {
