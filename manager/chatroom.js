@@ -53,15 +53,7 @@ class ChatRoom {
         const messageListener = function(e) {
             console.log(e);
             let data = JSON.parse(e.data);
-            if (data.type == "signup") {
-                // Need to create an internal data structure that keeps track
-                // of the rooms so that we don't add duplicates.
-                /**
-                 * TODO: 
-                 * 1. Need to create an internal data structure that keeps track
-                 * of the rooms so that we don't add duplicates.
-                 * 2. Need to figure out a good defualt UI before the user has logged in.
-                 */
+            if (data.type == _message_types.SIGNUP) {
                 data.rooms.map(elem => {
                     appendList({
                         list: "rooms",
@@ -69,7 +61,14 @@ class ChatRoom {
                         value: elem
                     });
                 });
-            } else { // type == "message"
+            } else if (data.type == _message_types.ROOM) {
+                let elem = data.message;
+                appendList({
+                    list: "rooms",
+                    html: "<button class=\"message-room-button\" onClick=joinChatRoom(\"" + elem + "\") > " + elem + "</button>",
+                    value: elem
+                })
+            } else if (data.type == _message_types.MESSAGE) { // type == "message"
                 appendList({
                     list: "currentmessages",
                     html: data.user + " said: " + data.message,
@@ -95,10 +94,4 @@ class ChatRoom {
             this.state.socket.close();
         }
     }
-
 }
-
-
-
-
-

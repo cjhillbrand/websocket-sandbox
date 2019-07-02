@@ -9,76 +9,43 @@ AWS.config.update({region: 'us-east-1'})
  * 2. Read the table id-room db to retrieve any possible rooms.
  */
 exports.handler = async(event) => {
-    var dynamoDB = new AWS.DynamoDB({region: 'us-east-1', apiversion: '2012-08-10'});
-    var connectionId = event.requestContext.connectionId;
-    var body = event.body;
-    var username = JSON.parse(body).value;
-    const writeParams = {
+    const db = new AWS.DynamoDB.DocumentClient();
+    const connectionId = event.requestContext.connectionId;
+    const username = JSON.parse(event.body).value;
+    var returnVal = {
+        statusCode: 200,
+        body: {
+            type: "signup",
+        }
+    }
+    const updateParams = {
         TableName: "client-records",
-        Key: {"ID": 
-            {S: connectionId}
-        },
-        ExpressionAttributeNames: {
-            "#N": "name"
-        },
-        ExpressionAttributeValues: {
-            ":name": {
-                S: username
-            }
-        },
-        UpdateExpression: "SET #N = :name",
-        ReturnValues: "ALL_NEW"
-    };
+        Key: {ID: connectionId},
+        UpdateExpression: "set #N = :name",
+        ExpressionAttributeNames: {"#N": "name"},
+        ExpressionAttributeValues: {":name": username},
+    }
+    const update = await db.update(updateParams, function(err, data) {
+        if (err) returnVal.body.updateStatus = "UPDATE-FAIL";
+        else returnVal.body.updateStatus = "UPDATE-SUCCESS";
+    }).promise();
+
     const readParams = {
         TableName: "id-room",
-        ProjectionExpression: "Room",
+        AttributesToGet: ['Room']
     };
-    const update = await updateData(dynamoDB, writeParams);
-    let readResponse = await readData(dynamoDB, readParams);
-    let rooms = readResponse.Items.map(function(elem) {
-        return elem.Room.S;
+
+    const read = await db.scan(readParams, function(err, data) {
+        if (err) returnVal.body.readStatus = "READ-FAIL";
+        else returnVal.body.readStatus = "READ-SUCCESS";
+    }).promise();
+
+    Promise.all([update, read]);
+    let rooms = read.Items.map(function(elem) {
+        return elem.Room;
     })
     rooms = [...new Set(rooms)];
-    console.log(rooms)
-    var responseBody = {
-        "type": "signup",
-        "connectionID": connectionId,
-        "success": true,
-        "rooms": rooms
-    };
-    var response = {
-        isBase64Encoded: false,
-        statusCode: 200,
-        body: JSON.stringify(responseBody)
-    }
-    return response;
-}
-
-function updateData(dynamoDB, writeParams) {
-    return new Promise(function(resolve, reject) {
-        dynamoDB.updateItem(writeParams, function(err, data) {
-            if (err) {
-                console.log(err);
-                reject(err);
-            } else {
-                console.log(data);
-                resolve(err);
-            }   
-        });
-    })
-}
-
-function readData(dynamoDB, readParams) {
-    return new Promise(function(resolve, reject) {
-        dynamoDB.scan(readParams, function(err, data) {
-            if (err) {
-                console.log(err);
-                reject(err);
-            } else {
-                console.log(data)
-                resolve(data);
-            }
-        })
-    })
-    
+    returnVal.body.rooms = rooms;
+    returnVal.body = JSON.stringify(returnVal.body);
+    return returnVal;
 }

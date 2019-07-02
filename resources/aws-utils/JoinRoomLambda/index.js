@@ -10,22 +10,25 @@ AWS.config.update({region: 'us-east-1'})
 // This lambda has to also return all of the messages in that
 // current room
 exports.handler = async (event) => {
-    var dynamodb = new AWS.DynamoDB();
-    var connectionId = event.requestContext.connectionId;
-    var room = JSON.parse(event.body).value;
+    const db = new AWS.DynamoDB.DocumentClient();
+    const connectionId = event.requestContext.connectionId;
+    const room = JSON.parse(event.body).value;
     var params = {
         TableName: "id-room",
-        Item: {
-            'ID': {S: connectionId},
-            'Room': {S: room}
-        }
-    }
-    try {
-        await dynamodb.putItem(params).promise();
-    } catch (e) {
-        console.log(e);
-    }
-    return {statusCode: 200, body: JSON.stringify("Write success")}
+        Item: {'ID': connectionId, 'Room': room}
+    };
+
+    var returnVal = {
+        statusCode: 200,
+        body: null
+    };
+
+    await db.put(params, function(err,data) {
+        if (err) returnVal.body = JSON.stringify("WRITE-ERROR");
+        else returnVal.body = JSON.stringify("WRITE-SUCCESS")
+    }).promise();
+
+    return returnVal;
 
 
 }

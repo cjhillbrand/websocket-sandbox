@@ -82,16 +82,17 @@
                     action: _routes.REGISTER, 
                     value: document.getElementById("name").value //clear after submit?
                 });
-                let buttons = ["leave-room-button", "sign-up-button", "send-message-button", 
+                let buttons = ["leave-room-button", "sign-up-button", 
                                 "create-new-room-button"];
                 buttons.map(label => {toggle(label)});
                 chatRoom.update({name: document.getElementById("name").value});
             }
 
             function createNewRoom() {
+                let room = document.getElementById("newroom").value;
                 chatRoom.sendWebsocketMessage({
                     action: _routes.NEW_ROOM,
-                    value: document.getElementById("newroom").value
+                    value: room
                 });
                 // Should they join the room as well?
                 document.getElementById("room-id").innerHTML = "You are in room: " + room;
@@ -108,6 +109,7 @@
                     element.disabled = false;
                 });
                 chatRoom.update({room: room});
+                toggle("send-message-button");
                 document.getElementById("room-id").innerHTML = "You are in room: " + room;
             }
 

@@ -12,3 +12,9 @@ const _routes = {
     NEW_ROOM: "new-room"
 }
 
+const _message_types = {
+    SIGNUP: "signup",
+    ROOM: "single-room",
+    MESSAGE: "client-message"
+}
+
