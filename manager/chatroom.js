@@ -32,6 +32,8 @@ class ChatRoom {
             result.message = "Connection Successfull";
             result.success = true;
         };
+        this.setMessageListener();
+        this.setCloseListener();
         return result;
     }
     // Create a Websocket route that accepts the route type of
@@ -41,21 +43,59 @@ class ChatRoom {
         console.log(request)
         var payload = JSON.stringify({
             "action": request.action,
-            "value": request.value
+            "value": request.value,
+            "room": this.state.room,
+            "name": this.state.name
         })
         this.state.socket.send(payload);
     }
-    setMessageListener(value) {
-        this.state.socket.onmessage = value;
+    setMessageListener() {
+        const messageListener = function(e) {
+            console.log(e);
+            let data = JSON.parse(e.data);
+            if (data.type == "signup") {
+                // Need to create an internal data structure that keeps track
+                // of the rooms so that we don't add duplicates.
+                /**
+                 * TODO: 
+                 * 1. Need to create an internal data structure that keeps track
+                 * of the rooms so that we don't add duplicates.
+                 * 2. Need to figure out a good defualt UI before the user has logged in.
+                 */
+                data.rooms.map(elem => {
+                    appendList({
+                        list: "rooms",
+                        html: "<button class=\"message-room-button\" onClick=joinChatRoom(\"" + elem + "\") > " + elem + "</button>",
+                        value: elem
+                    });
+                });
+            } else { // type == "message"
+                appendList({
+                    list: "currentmessages",
+                    html: data.user + " said: " + data.message,
+                    value: data.user + data.message
+                });
+            }   
+        };
+        this.state.socket.onmessage = messageListener;
     }
-    setCloseListener(value) {
-        this.state.socket.onclose = value;
+    update(param) {
+        if (param.room) this.state.room = param.room;
+        if (param.name) this.state.name = param.name;
+        // add more updates as neccessary
+    }
+    setCloseListener() {
+        this.state.socket.onclose = function(e) {
+            console.log(e);
+            console.log("Closed");
+        }
     }
     closeConnection() {
         if(this.state.connected) {
             this.state.socket.close();
         }
     }
+
 }
 
 

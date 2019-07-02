@@ -62,46 +62,7 @@
         </div>
         <script>
             var chatRoom = new ChatRoom();
-            const connection = chatRoom.connect(); 
-            
-            
-            // How do i get around this referencing semantics
-            // I want to declare these listeners in chat room.
-            let messageListener = function(e) {
-                console.log(e);
-                let data = JSON.parse(e.data);
-                if (data.type == "signup") {
-                    // Need to create an internal data structure that keeps track
-                    // of the rooms so that we don't add duplicates.
-                    /**
-                     * TODO: 
-                     * 1. Need to create an internal data structure that keeps track
-                     * of the rooms so that we don't add duplicates.
-                     * 2. Need to figure out a good defualt UI before the user has logged in.
-                     */
-                    data.rooms.map(elem => {
-                        appendList({
-                            list: "rooms",
-                            html: "<button class=\"message-room-button\" onClick=joinChatRoom(\"" + elem + "\") > " + elem + "</button>",
-                            value: elem
-                        });
-                    });
-                } else { // type == "message"
-                    appendList({
-                        list: "currentmessages",
-                        html: data.user + " said: " + data.message,
-                        value: data.user + data.message
-                    });
-                }   
-            }
-
-            let closeListener = function(e) {
-                console.log(e)
-                console.log("Closed")
-            }
-            chatRoom.setMessageListener(messageListener);
-            chatRoom.setCloseListener(closeListener);
-            
+            const connection = chatRoom.connect();             
             // Is there a cleaner way such that I dont have to wrap these...
             // If we can move these functions to another file that would be ideal...
             function dispatchMessage() {
@@ -124,6 +85,7 @@
                 let buttons = ["leave-room-button", "sign-up-button", "send-message-button", 
                                 "create-new-room-button"];
                 buttons.map(label => {toggle(label)});
+                chatRoom.update({name: document.getElementById("name").value});
             }
 
             function createNewRoom() {
@@ -145,6 +107,7 @@
                 rooms.forEach(element => {
                     element.disabled = false;
                 });
+                chatRoom.update({room: room});
                 document.getElementById("room-id").innerHTML = "You are in room: " + room;
             }
 
@@ -154,15 +117,7 @@
                     value: _routes.LEAVE
                 });
                 toggle("room-button")
-            }
-
-            function appendList(config) {
-                var ul = document.getElementById(config.list);
-                var li = document.createElement("li");
-                li.innerHTML = config.html;
-                ul.appendChild(li);
-            }
-            
+            }            
             // The toggle function isnt working need 
             // to figure that out
             function toggle(elem) {
@@ -170,6 +125,13 @@
                 document.getElementById(elem).disabled = !document.getElementById(elem).disabled;
                 console.log(document.getElementById(elem).disabled);
 
+            }
+
+            function appendList(config) {
+                var ul = document.getElementById(config.list);
+                var li = document.createElement("li");
+                li.innerHTML = config.html;
+                ul.appendChild(li);
             }
         </script>
     </body>

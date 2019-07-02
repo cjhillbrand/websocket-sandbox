@@ -1,47 +1,38 @@
 #!/bin/sh
-while :; do
-  case $1 in
-    --file)
-        file=$2
-        shift
-        if [[ ! -z "${lambda}" ]]; 
-        then 
-            break 
-        fi
+echo "Enter a number that designates which Lambda function to deploy: "
+echo "1) Connect"
+echo "2) Register"
+echo "3) JoinRoom"
+echo "4) Dispatch"
+read number
+case $number in
+    1)
+        path="ConnectionLambda/"
+        func="onConnectionFunction"
         ;;
-    --function) 
-        lambda=$2
-        shift
-        if [[ ! -z "${file}" ]]; 
-        then
-            break
-        fi
+    2)
+        path="RegisterUserLambda/"
+        func="registerUser"
         ;;
-    \?)
-      echo "Invalid option: -$1" >&2
-      exit 1
-      ;;
-    :)
-      echo "Option -$1 requires an argument." >&2
-      exit 1
-      ;;
-  esac
-  shift 
-done
-if [ ! -d "$file" ]; then
-    echo "Folder does not exist"
-    echo "exiting..."
-    exit
-fi
+    3) 
+        path="JoinRoomLambda"
+        func="joinRoom"
+        ;;
+    4)
+        path="DispatchLambda"
+        func="dispatchMessage"
+        ;;
+esac
 
-echo "deploying lambda ${file} to function ${lambda}"
+echo "deploying lambda ${path} to function ${func}"
 
 echo "Creating Zip file"
-cd ${file}
+cd ${path}
 zip lambda.zip index.js 2> /dev/null
 echo "Deploying Lambda function to AWS"
 {
-    aws lambda update-function-code --function-name ${lambda} --zip-file fileb://lambda.zip 
+    aws lambda update-function-code --function-name ${func} --zip-file fileb://lambda.zip 2> /dev/null
+    echo "Success deploying"
 } || {
     echo "Failed to deploy to lambda"
     echo "Make sure the name of your lambda function mathes the one on your AWS account"

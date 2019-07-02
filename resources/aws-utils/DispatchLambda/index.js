@@ -10,25 +10,18 @@ AWS.config.update({region: 'us-east-1'})
  * request)
  */
 exports.handler = async (event) => {
+    //const {name, value, room} = event.body;
     console.log(event)
-    var message = JSON.parse(event.body).value;
+    const { value, room, name } = JSON.parse(event.body);
     var dynamodb = new AWS.DynamoDB();
-    let room, user;
-    try {
-        // Can I make this a batch request? Well ya you can idiot, just do it... but after we migrate to db document client
-        room = await dynamodb.getItem({TableName: "id-room", Key: {"ID": {S: event.requestContext.connectionId}}}).promise();
-        user = await dynamodb.getItem({TableName: "client-records", Key: {"ID": {S: event.requestContext.connectionId}}}).promise();
-    } catch(e) {
-        throw e;
-    }
-    Promise.all([room, user]);
+
     var message = JSON.stringify({
-        message: JSON.parse(event.body).value, 
-        user: user.Item.name.S,
+        message: value, 
+        user: name,
         type: "client-message"
     });
     // Gather all of the connectionIDs that are linked to the room.
-    const readResponse = await getConnectionIds(dynamodb, room.Item.Room.S);
+    const readResponse = await getConnectionIds(dynamodb, room);
     let connectionData = readResponse.Items.map(function(elem) {
         return elem.ID.S;
     })
