@@ -2,24 +2,33 @@ var AWS = require('aws-sdk')
 AWS.config.update({region: 'us-east-1'})
 
 exports.handler = async (event) => {
-    console.log(event);
-    var dynamoDB = new AWS.DynamoDB();
-    const connectionID = event.requestContext.connectionId;
+    const db = new AWS.DynamoDB.DocumentClient();
+    const connectionId = event.requestContext.connectionId;
     var params = {
-        Key: {
-            "ID": {
-                S: connectionID
-            }
-        },
-        TableName: "client-records"
-    }
-    dynamoDB.deleteItem(params, function(err, data) {
-        if (err) console.log(err);
-         else console.log(data)
-    })
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify('Hello from Lambda!'),
+        TableName: "client-records",
+        Key: {"ID": connectionId}
     };
+    var response = {
+        statusCode: 200,
+        body: {
+            deleteOne: null,
+            deleteTwo: null
+        }
+    };
+
+    const deleteOne = await db.delete(params, function(err, data) {
+        if (err) response.body.deleteOne = "DELETE-ONE-FAIL";
+        else response.body.deleteOne = "DELETE-ONE-PASS";
+    }).promise();
+
+    params.TableName = "id-room";
+
+    const deleteTwo = await db.delete(params, function(err, data) {
+        if (err) response.body.deleteTwo = "DELETE-TWO-FAIL";
+        else response.body.deleteTwo = "DELETE-TWO-PASS";
+    }).promise();
+
+    Promise.all([deleteOne, deleteTwo]);
+    response.body = JSON.stringify(response.body);
     return response;
 };

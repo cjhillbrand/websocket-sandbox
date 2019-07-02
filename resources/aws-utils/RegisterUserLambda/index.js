@@ -9,7 +9,6 @@ AWS.config.update({region: 'us-east-1'})
  * 2. Read the table id-room db to retrieve any possible rooms.
  */
 exports.handler = async(event) => {
-    console.log("EVENT FROM REGISTER", event);
     var dynamoDB = new AWS.DynamoDB({region: 'us-east-1', apiversion: '2012-08-10'});
     var connectionId = event.requestContext.connectionId;
     var body = event.body;

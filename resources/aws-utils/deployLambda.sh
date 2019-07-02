@@ -4,6 +4,7 @@ echo "1) Connect"
 echo "2) Register"
 echo "3) JoinRoom"
 echo "4) Dispatch"
+echo "5) Disconnect"
 read number
 case $number in
     1)
@@ -22,6 +23,9 @@ case $number in
         path="DispatchLambda"
         func="dispatchMessage"
         ;;
+    5)
+        path="DisconnectLambda"
+        func="testDisconnect"
 esac
 
 echo "deploying lambda ${path} to function ${func}"
