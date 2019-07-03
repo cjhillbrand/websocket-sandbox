@@ -8,6 +8,7 @@ class ChatRoom {
             messages: [],
             socket: null
         };
+        console.log(this.state);
         window.addEventListener("beforeunload", this.closeConnection.bind(this));
     }
     connect() {
@@ -31,6 +32,7 @@ class ChatRoom {
             // Figure out other useful info to store in result;
             result.message = "Connection Successfull";
             result.success = true;
+            document.getElementById("overlay").style.display = "none";
         };
         this.setMessageListener();
         this.setCloseListener();
@@ -88,6 +90,7 @@ class ChatRoom {
         this.state.socket.onclose = function(e) {
             console.log(e);
             console.log("Closed");
+            document.getElementById("overlay").style.display = "block";
         }
     }
     setErrorListener() {
