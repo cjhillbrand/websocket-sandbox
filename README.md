@@ -24,7 +24,7 @@ To read more please visit: [here](https://aws.amazon.com/api-gateway/)
 * **AWS Cognito** (maybe): ...
 * On *the programming side*: We are using raw unadultarated javascript and html for the browser and User Interface. And for the lambda function we are using node.js version 10.
 
-##Background Story  
+## Background Story  
 After the huge success of *[Alien Attack](https://github.com/fabianmartins/alienattack.workshop)* Unicorn Games has exploded into a company where its growing too fast for its own good! With all this growth the CSO has started to worry that some of the external communications methods may not be the most secure, robust, cost effective, and have high availability. She has asked you to build a chat-room from scratch!
 
 With this daunting task in front of you, you're not too sure how to start. You ask some of your co-workers if they know of any good places to start (*of course besides the endless blog posts*). Jamie says, "Back in my college days I interned for this small cloud provider, my project was to make a chatroom." They also warn you that some of the pieces weren't really working, Jamie ended the internship a few weeks too early to get it just right. Now its up to you to figure out all the small bugs in order to create a successfull chat room.
