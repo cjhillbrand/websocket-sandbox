@@ -20,7 +20,7 @@ class ChatRoom {
         if (this.state.connected)
             result.message = "Already Connected to Websocket"; // Factor out error message
         try {
-            this.state.socket = new WebSocket(AWS_CONFIG.websocket, "upgrade");
+            this.state.socket = new WebSocket(AWS_CONFIG.websocket);
         } catch (e) {
             result.message = e;
             return result;
@@ -92,7 +92,7 @@ class ChatRoom {
     }
     setErrorListener() {
         this.state.socket.onerror = function(e) {
-            console.log(e);
+            alert("ERROR ", e);
         }
     }
     closeConnection() {

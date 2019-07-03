@@ -23,7 +23,13 @@ exports.handler = async (event) => {
         TableName: "id-room",
         Item: {'ID': connectionId,'Room': value}
     }
-    const write = db.put(writeParam);
+    const write = await db.put(writeParam).promise()
+    .then(() => {
+        returnVal.body.write = "SUCCESS";
+    })
+    .catch(err => {
+        returnVal.body.write = "FAIL";
+    });
     
     let connectionData;
     const scanParams = {
@@ -58,18 +64,23 @@ exports.handler = async (event) => {
     const postCalls = connectionData.map(async ( connectionId ) => {
         console.log('POSTCALLS:', connectionId);
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise()
+        .then(() => console.log("SUCCESS sending to: ", connectionId))
         .catch(e => {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionId}`);
                 db.delete({TableName: "id-room", Key: { ID: connectionId }});
                 db.delete({TableName: "client-records", Key: { ID: connectionId }});
             } else {
+                console.log("ERROR line 67");
                 returnVal.body.dispatchStatus = "FAIL";
                 throw e;
             }
-        });
+        })
     });
-    //Promise.all(postCalls);
+    Promise.all(postCalls)
+    .then(() => {
+        console.log("All promises sent");
+    });
     returnVal.body.dispatchStatus = "SUCCESS";
     returnVal.body = JSON.stringify(returnVal.body);
     console.log(' RETURNVAL - FINAL:' , returnVal);

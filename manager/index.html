@@ -63,8 +63,7 @@
         <script>
             var chatRoom = new ChatRoom();
             const connection = chatRoom.connect();             
-            // Is there a cleaner way such that I dont have to wrap these...
-            // If we can move these functions to another file that would be ideal...
+            
             function dispatchMessage() {
                 chatRoom.sendWebsocketMessage({
                     action: _routes.DISPATCH,
@@ -77,10 +76,9 @@
             }
 
             function signUpUser() {
-                // Connection needs to return an array of rooms
                 chatRoom.sendWebsocketMessage({
                     action: _routes.REGISTER, 
-                    value: document.getElementById("name").value //clear after submit?
+                    value: document.getElementById("name").value 
                 });
                 let buttons = ["sign-up-button", "create-new-room-button"];
                 buttons.map(label => {toggle(label)});
@@ -93,11 +91,7 @@
                     action: _routes.NEW_ROOM,
                     value: room
                 });
-                // Should they join the room as well?
-                chatRoom.update({room: room})
-                //let buttons = ["send-message-button, create-new-room-button", "leave-room-button"];
-                //buttons.map(label => {toggle(label)});
-                document.getElementById("room-id").innerHTML = "You are in room: " + room;
+                toggleRoom(room);
             }
 
             function joinChatRoom(room) {
@@ -105,12 +99,7 @@
                     action: _routes.JOIN,
                     value: room
                 });
-                // This isnt working... but who knows
-                toggleRoom();
-                chatRoom.update({room: room});
-                let buttons = ["send-message-button", "leave-room-button"];
-                buttons.map(label => toggle(label));
-                document.getElementById("room-id").innerHTML = "You are in room: " + room;
+                toggleRoom(room);
             }
 
             function leaveRoom() {
@@ -118,21 +107,27 @@
                     action: _routes.LEAVE,
                     value: _routes.LEAVE
                 });
-                toggleRoom();
-                document.getElementById("room-id").innerHTML = "You are in room: ";
+                toggleRoom("");
+                let messages = document.getElementById("currentmessages");
+                while (messages.firstChild)
+                    messages.removeChild(messages.firstChild);
             }            
-            // The toggle function isnt working need 
-            // to figure that out
+
             function toggle(elem) {
                 document.getElementById(elem).disabled = !document.getElementById(elem).disabled;
             }
 
-            function toggleRoom() {
+            function toggleRoom(room) {
                 var rooms = [...document.getElementsByClassName("message-room-button")];
                 rooms.map(element => {
                     element.disabled = !element.disabled;
                 });
+                chatRoom.update({room: room});
+                let buttons = ["send-message-button", "create-new-room-button", "leave-room-button"];
+                buttons.map(label => toggle(label));
+                document.getElementById("room-id").innerHTML = "You are in room: " + room;
             }
+
             function appendList(config) {
                 var ul = document.getElementById(config.list);
                 var li = document.createElement("li");
@@ -141,5 +136,4 @@
             }
         </script>
     </body>
-
 </html>
