@@ -31,8 +31,8 @@ exports.handler = async(event) => {
     }).promise();
 
     const readParams = {
-        TableName: "id-room",
-        AttributesToGet: ['Room']
+        TableName: "messages-room",
+        AttributesToGet: ['room']
     };
 
     const read = await db.scan(readParams, function(err, data) {
@@ -42,7 +42,7 @@ exports.handler = async(event) => {
 
     Promise.all([update, read]);
     let rooms = read.Items.map(function(elem) {
-        return elem.Room;
+        return elem.room;
     })
     rooms = [...new Set(rooms)];
     returnVal.body.rooms = rooms;

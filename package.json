@@ -1,0 +1,19 @@
+{
+  "name": "websocket-sandbox",
+  "version": "1.0.0",
+  "description": "A tutorial program designed to teach the usage of websockets on AWS",
+  "main": "index.js",
+  "scripts": {
+    "test": "(Run index.html in browser)"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cjhillbrand/websocket-sandbox.git"
+  },
+  "author": "CJ Hillbrand",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cjhillbrand/websocket-sandbox/issues"
+  },
+  "homepage": "https://github.com/cjhillbrand/websocket-sandbox#readme"
+}

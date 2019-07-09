@@ -32,7 +32,7 @@ exports.handler = async (event) => {
     });
     
     let connectionData;
-    const scanParams = {
+    let scanParams = {
         TableName : "client-records"
     };
 
@@ -82,6 +82,25 @@ exports.handler = async (event) => {
         console.log("All promises sent");
     });
     returnVal.body.dispatchStatus = "SUCCESS";
+
+    scanParams = {
+        TableName: "messages-room",
+        FilterExpression: "room = :this_room",
+        ExpressionAttributeValues: {":this_room": value}
+    };
+    await db.scan(scanParams).promise()
+    .then((data) => {
+        console.log(data);
+        returnVal.body.scanStatus = "SUCCESS";
+        let messages = data.Items.map((elem) => {return elem.message});
+        returnVal.body.messages = [...new Set(messages)];
+        returnVal.body.type = "multi-message";
+    })
+    .catch((err) => {
+        console.log("FAIL: ", err);
+        returnVal.body.scanStatus = "FAIL";
+    });
+    
     returnVal.body = JSON.stringify(returnVal.body);
     console.log(' RETURNVAL - FINAL:' , returnVal);
     return returnVal;

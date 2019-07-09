@@ -12,6 +12,7 @@ AWS.config.update({region: 'us-east-1'})
 exports.handler = async (event) => {
     const { value, room, name } = JSON.parse(event.body);
     var db = new AWS.DynamoDB.DocumentClient();
+    const time = new Date();
     var returnVal = {
         statusCode: 200,
         body: {}
@@ -55,7 +56,7 @@ exports.handler = async (event) => {
         } catch (e) {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionId}`);
-                await db.delete({TableName: "id-room", Key: { ID: connectionId }}).promise();
+                //await db.delete({TableName: "id-room", Key: { ID: connectionId }}).promise();
                 await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
             } else {
                 returnVal.body.dispatchStatus = "FAIL";
@@ -65,6 +66,32 @@ exports.handler = async (event) => {
     });
     Promise.all(postCalls);
     returnVal.body.dispatchStatus = "SUCCESS";
+    const insert = await db.put({
+        TableName: "messages-room", 
+        Item: {
+            message: {
+                user: name,
+                content: value
+            }, 
+            room: room,
+            time: time.toLocaleString(undefined, {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            })
+        }
+    }).promise()
+    .catch((err) => {
+        console.log("ERROR during place: ", err);
+        returnVal.body.putStatus = "FAIL";
+    })
+    .then(() => {
+        returnVal.body.putStatus = "SUCCESS";
+    });
+
     returnVal.body = JSON.stringify(returnVal.body);
     return returnVal;
 };

@@ -15,6 +15,7 @@ const _routes = {
 const _message_types = {
     SIGNUP: "signup",
     ROOM: "single-room",
-    MESSAGE: "client-message"
+    MESSAGE: "client-message",
+    MULTI_MESSAGE: "multi-message"
 }
 

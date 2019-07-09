@@ -30,11 +30,11 @@ After the huge success of *[Alien Attack](https://github.com/fabianmartins/alien
 With this daunting task in front of you, you're not too sure how to start. You ask some of your co-workers if they know of any good places to start (*of course besides the endless blog posts*). Jamie says, "Back in my college days I interned for this small cloud provider, my project was to make a chatroom." They also warn you that some of the pieces weren't really working, Jamie ended the internship a few weeks too early to get it just right. Now its up to you to figure out all the small bugs in order to create a successfull chat room.
 
 ### Pre-Requisites
-1. Must have an AWS account
-2. Has set up the AWS CLI
-###Backgroud Story
+1. Must have an AWS account, and access to the AWS CLI, there are several ways to get access to the AWS CLI, below there are two ways:
 
-###Tasks
+2. Has set up the AWS CLI
+
+### Tasks
 We also want to make sure that we have instructions for set up
 (this includes being able to edit code on the local machine & 
 using SAM to autodeploy a stack)

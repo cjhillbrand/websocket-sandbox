@@ -20,13 +20,34 @@ exports.handler = async (event) => {
 
     var returnVal = {
         statusCode: 200,
-        body: null
+        body: {}
     };
 
-    await db.put(params, function(err,data) {
-        if (err) returnVal.body = JSON.stringify("WRITE-ERROR");
-        else returnVal.body = JSON.stringify("WRITE-SUCCESS")
-    }).promise();
+    await db.put(params).promise()
+    .catch((err) => {
+        returnVal.body.writeStatus = "FAIL";
+    })
+    .then(() => {
+        returnVal.body.writeStatus = "SUCCESS";
+    });
 
+    const scanParams = {
+        TableName: "messages-room",
+        FilterExpression: "room = :this_room",
+        ExpressionAttributeValues: {":this_room": room}
+    };
+    await db.scan(scanParams).promise()
+    .then((data) => {
+        console.log(data);
+        returnVal.body.scanStatus = "SUCCESS";
+        let messages = data.Items.map((elem) => {return elem.message});
+        returnVal.body.messages = [...new Set(messages)];
+        returnVal.body.type = "multi-message";
+    })
+    .catch((err) => {
+        console.log("FAIL: ", err);
+        returnVal.body.scanStatus = "FAIL";
+    });
+    returnVal.body = JSON.stringify(returnVal.body);
     return returnVal;
 }
