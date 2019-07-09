@@ -24,6 +24,12 @@ class ChatRoom {
         window.addEventListener('beforeunload',
             this.closeConnection.bind(this));
     }
+    /**
+     * Connects to the websocket
+     * listens for a successful connection
+     * @function
+     * @return {JSON Object} status of connection
+     */
     connect() {
         let result = {
             message: 'STALE',
@@ -50,6 +56,12 @@ class ChatRoom {
         this.setCloseListener();
         return result;
     }
+    /**
+     * Sets the state of the webpage back
+     * to the starting state.
+     * Connects back to the websocket
+     * @function
+     */
     reconnect() {
         // Clear all of the input fields
         var inputs = [...document.getElementsByClassName("input-area")];
@@ -84,6 +96,11 @@ class ChatRoom {
         // Reconnect to the websocket the standard way.
         this.connect();
     }
+
+    /**
+     * Sends the websocket a message. 
+     * @param {JSON Object} request 
+     */
     sendWebsocketMessage(request) {
         console.log('attempting to: ', request.action);
         console.log(request);
@@ -95,6 +112,12 @@ class ChatRoom {
         });
         this.state.socket.send(payload);
     }
+    /**
+     * Sets the message listener for the websocket
+     * Decides on what action to do depending on 
+     * the type of message delivered back to the cliet.
+     * @function
+     */
     setMessageListener() {
         const messageListener = function(e) {
             console.log(e);
@@ -138,6 +161,10 @@ class ChatRoom {
         window.addEventListener('message',
             this.state.socket.onmessage.bind(this), false);
     }
+    /**
+     * Updates the state of the Chatroom class.
+     * @param {JSON object}
+     */
     update(param) {
         if (param.room) this.state.room = param.room;
         if (param.name) this.state.name = param.name;
@@ -145,6 +172,10 @@ class ChatRoom {
         if (param.connected) this.state.connected = param.connected;
         // add more updates as neccessary
     }
+    /**
+     * Sets the action to do when the
+     * websocket connection is closed
+     */
     setCloseListener() {
         this.state.socket.onclose = function(e) {
             const param = {
@@ -157,11 +188,18 @@ class ChatRoom {
             document.getElementById('overlay').style.display = 'block';
         };
     }
+    /**
+     * Sets the action to do when the websoceket
+     * sends an error to client
+     */
     setErrorListener() {
         this.state.socket.onerror = function(e) {
             alert('ERROR ', e);
         };
     }
+    /**
+     * Closes the connection to the websocket.
+     */
     closeConnection() {
         if (this.state.connected) {
             this.state.socket.close();
