@@ -16,6 +16,7 @@ const _message_types = {
     SIGNUP: "signup",
     ROOM: "single-room",
     MESSAGE: "client-message",
-    MULTI_MESSAGE: "multi-message"
+    MULTI_MESSAGE: "multi-message",
+    DELETE_ROOM: "delete-room"
 }
 

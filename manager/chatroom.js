@@ -90,7 +90,7 @@ class ChatRoom {
         // Disable any buttons that should not be enabled
         var buttons = ["leave-room-button", "send-message-button", "create-new-room-button"];
         buttons.map((elem) => {
-            if (!elem.disabled) toggle(elem);
+            if (!document.getElementById(elem).disabled) toggle(elem);
         });
 
         // Reconnect to the websocket the standard way.
@@ -122,6 +122,7 @@ class ChatRoom {
         const messageListener = function(e) {
             console.log(e);
             const data = JSON.parse(e.data);
+            console.log(data.type);
             if (data.type == _message_types.SIGNUP) {
                 data.rooms.map((elem) => {
                     appendList({
@@ -134,10 +135,11 @@ class ChatRoom {
                 });
             } else if (data.type == _message_types.ROOM && this.state.name) {
                 const elem = data.message;
+                let disabled = this.state.room;
                 appendList({
                     list: 'rooms',
                     html: '<button class="message-room-button" ' +
-                        'onClick=joinChatRoom("' + elem + '") disabled=true>'
+                        'onClick=joinChatRoom("' + elem + '") disabled=' + disabled + '>'
                         + elem + '</button>',
                     value: elem,
                 });
@@ -155,6 +157,17 @@ class ChatRoom {
                         value: data.user + data.message,
                     })
                 });
+            } else if (data.type == _message_types.DELETE_ROOM) {
+                console.log("attempting to remove room");
+                let rooms = document.getElementsByClassName("message-room-button");
+                let { room } = data; 
+                for (let roomUI of rooms) {
+                    console.log(`roomUI.innerHTML: ${roomUI.innerHTML} room: ${room}`);
+                    if (roomUI.innerHTML == room) {
+                        console.log("Removing child ", roomUI);
+                        roomUI.parentElement.removeChild(roomUI);
+                    }
+                }
             }
         };
         this.state.socket.onmessage = messageListener.bind(this);

@@ -14,31 +14,44 @@ exports.handler = async (event) => {
     const { connectionId } = event.requestContext;
     const room = JSON.parse(event.body).value;
 
-    const updateParams = {
-        TableName: "room-messages-users",
-        Key: {room: room},
-        ExpressionAttributeNames: {
-            '#users': 'users'
-        },
-        ExpressionAttributeValues: {
-            ':users': [connectionId],
-            ':empty_list': []
-        },
-        UpdateExpression: 'set #users = list_append(if_not_exists(#users, :empty_list), :users)'
+    const transactWriteParams = {
+        TransactItems: [{
+            Update: {
+                TableName: "room-messages-users",
+                Key: {room: room},
+                ExpressionAttributeNames: {
+                    '#users': 'users'
+                },
+                ExpressionAttributeValues: {
+                    ':users': [connectionId],
+                    ':empty_list': []
+                },
+                UpdateExpression: 'set #users = list_append(if_not_exists(#users, :empty_list), :users)'
+            }
+        }, {
+            Update: {
+                TableName: 'client-records',
+                Key: { ID: connectionId },
+                UpdateExpression: "set #R = :room",
+                ExpressionAttributeNames: {"#R": "room"},
+                ExpressionAttributeValues: {":room": room},
+            }
+        }]
     };
 
     var returnVal = {
         statusCode: 200,
         body: {}
     };
-    await db.update(updateParams).promise()
-    .then(() => {
-        console.log("Append Success");
+
+    await db.transactWrite(transactWriteParams).promise()
+    .then(()=> {
+        returnVal.body.transactWrite = "SUCCESS";
     })
     .catch((err) => {
-        console.log("ERROR APPENDING: ", err);
-    });
-
+        returnVal.body.transactWrite = "FAIL";
+        console.log("FAIL on TRANSACTION ", err);
+    })
 
     const scanParams = {
         TableName: "room-messages-users",
@@ -49,9 +62,14 @@ exports.handler = async (event) => {
     await db.scan(scanParams).promise()
     .then((data) => {
         console.log(data);
-        returnVal.body.scanStatus = "SUCCESS";
-        returnVal.body.messages = data.Items[0].messages.map((elem) => {return elem});
-        returnVal.body.type = "multi-message";
+        if (data.Items[0].messages) {
+            returnVal.body.scanStatus = "SUCCESS";
+            returnVal.body.messages = data.Items[0].messages.map((elem) => {return elem});
+            returnVal.body.type = "multi-message";
+        } else {
+            returnVal.body.scanStatus = "EMPTY";
+        }
+        
     })
     .catch((err) => {
         console.log("FAIL: ", err);

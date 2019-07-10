@@ -19,21 +19,32 @@ exports.handler = async (event) => {
         body: {}
     };
     
-    const writeParam = {
-        TableName: "room-messages-users",
-        Item: {'room': value, users: [connectionId]},
-    }
-
+    const transactWriteParam = {
+        TransactItems: [{
+            Put: {
+                TableName: 'room-messages-users',
+                Item: {'room': value, users: [connectionId]}
+            }
+        }, {
+            Update: {
+                TableName: 'client-records',
+                Key: { ID: connectionId },
+                UpdateExpression: "set #R = :room",
+                ExpressionAttributeNames: {"#R": "room"},
+                ExpressionAttributeValues: {":room": value},
+            }
+        }]
+    };
     // We handle uniqueness on the client side. Not sure if 
     // we should double check here for concurruncy issues...
-    const write = await db.put(writeParam).promise()
+    await db.transactWrite(transactWriteParam).promise()
     .then(() => {
-        returnVal.body.write = "SUCCESS";
+        returnVal.body.transactWrite = "SUCCESS";
     })
-    .catch(err => {
-        console.log("ERROR WRITE", err);
-        returnVal.body.write = "FAIL";
-    });
+    .catch((err) => {
+        console.log("ERROR on TRANSACTION: ", err);
+        returnVal.body.transactWrite = "FAIL";
+    })
     
     let connectionData;
     let scanParams = {
@@ -65,37 +76,18 @@ exports.handler = async (event) => {
         endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
     });
 
-    let count = 0;
     for (let connectionId of connectionData) {
-        console.log(count);
         try {
             await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise();
         } catch (e) {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionId}`);
-                const updateParams = {
-                    TableName: "room-messages-users", 
-                    Key: { room: room },
-                    UpdateExpression: 'REMOVE #users[' + count + ']',
-                    ExpressionAttributeNames: {
-                        '#users': 'users'
-                    }
-                };
-                await db.update(updateParams).promise()
-                .then(() => {
-                    console.log("SUCCESS")
-                })
-                .catch((err) => {
-                    console.log("ERROR during deleting old connection", err);
-                });
                 await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
-                count--;
             } else {
                 returnVal.body.dispatchStatus = "FAIL";
                 throw e;
             }
         }
-        count++;
     }
     returnVal.body.dispatchStatus = "SUCCESS";
 
