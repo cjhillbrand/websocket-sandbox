@@ -24,13 +24,18 @@ exports.handler = async (event) => {
     var returnValue = {
         isBase64Encoded: false,
         statusCode: 200,
-        body: null
+        body: {}
     }
 
-    const response = await db.put(params, function(err, data) {
-        if (err) returnValue.body = JSON.stringify("DB-FAILURE");
-        if (data) returnValue.body = JSON.stringify("DB-SUCCESS");
-    }).promise();
-
+    await db.put(params).promise()
+    .then(() => {
+        console.log("SUCCESS W/ PUT");
+        returnValue.body.put = "SUCCESS";
+    })
+    .catch((err) => {
+        console.log("FAIL W/ PUT");
+        returnValue.body.put = "FAIL";
+    });
+    returnValue.body = JSON.stringify(returnValue.body);
     return returnValue;
 }

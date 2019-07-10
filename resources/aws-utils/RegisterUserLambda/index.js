@@ -25,27 +25,33 @@ exports.handler = async(event) => {
         ExpressionAttributeNames: {"#N": "name"},
         ExpressionAttributeValues: {":name": username},
     }
-    const update = await db.update(updateParams, function(err, data) {
-        if (err) returnVal.body.updateStatus = "UPDATE-FAIL";
-        else returnVal.body.updateStatus = "UPDATE-SUCCESS";
-    }).promise();
+    await db.update(updateParams).promise()
+    .then(() => {
+        returnVal.body.updateStatus = "SUCCESS";
+    })
+    .catch((err) => {
+        console.log("ERROR on UPDATE", err);
+        returnVal.body.updateStatus = "FAIL";
+    });
 
     const readParams = {
-        TableName: "messages-room",
+        TableName: "room-messages-users",
         AttributesToGet: ['room']
     };
 
-    const read = await db.scan(readParams, function(err, data) {
-        if (err) returnVal.body.readStatus = "READ-FAIL";
-        else returnVal.body.readStatus = "READ-SUCCESS";
-    }).promise();
-
-    Promise.all([update, read]);
-    let rooms = read.Items.map(function(elem) {
-        return elem.room;
+    const read = await db.scan(readParams).promise()
+    .then((data) => {
+        rooms = data.Items.map((elem) => {
+            return elem.room;
+        })
+        rooms = [...new Set(rooms)];
+        returnVal.body.rooms = rooms;
     })
-    rooms = [...new Set(rooms)];
-    returnVal.body.rooms = rooms;
+    .catch((err) => {
+        console.log("ERROR on READ", err);
+        returnVal.body.rooms = "FAIL"
+    });
+
     returnVal.body = JSON.stringify(returnVal.body);
     return returnVal;
 }

@@ -64,20 +64,20 @@ class ChatRoom {
      */
     reconnect() {
         // Clear all of the input fields
-        var inputs = [...document.getElementsByClassName("input-area")];
+        let inputs = [...document.getElementsByClassName("input-area")];
         inputs.map((elem) => {
             elem.value = "";
         });
         // Clear any messages
-        var message = document.getElementById("currentmessages");
+        let message = document.getElementById("currentmessages");
         while (message.firstChild) {
-            message.removeChild(mesage.firstChild);
+            message.removeChild(message.firstChild);
         }
         // Reformat label
         document.getElementById("room-id").innerHTML = "You are in room:";
 
         // Delete any available rooms
-        var rooms = document.getElementById("rooms");
+        let rooms = document.getElementById("rooms");
         while (rooms.firstChild) {
             rooms.removeChild(rooms.firstChild);
         }
@@ -127,7 +127,7 @@ class ChatRoom {
                     appendList({
                         list: 'rooms',
                         html: '<button class="message-room-button" ' +
-                            'onClick=joinChatRoom("' + elem + '") > ' +
+                            'onClick=joinChatRoom("' + elem + '") >' +
                             elem + '</button>',
                         value: elem,
                     });
@@ -137,7 +137,7 @@ class ChatRoom {
                 appendList({
                     list: 'rooms',
                     html: '<button class="message-room-button" ' +
-                        'onClick=joinChatRoom("' + elem + '") disabled=true> '
+                        'onClick=joinChatRoom("' + elem + '") disabled=true>'
                         + elem + '</button>',
                     value: elem,
                 });
@@ -184,9 +184,9 @@ class ChatRoom {
                 websocket: null,
                 connected: false,
             };
-            update(param);
+            this.update(param);
             document.getElementById('overlay').style.display = 'block';
-        };
+        }.bind(this);
     }
     /**
      * Sets the action to do when the websoceket

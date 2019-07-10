@@ -11,37 +11,46 @@ AWS.config.update({region: 'us-east-1'})
 // current room
 exports.handler = async (event) => {
     const db = new AWS.DynamoDB.DocumentClient();
-    const connectionId = event.requestContext.connectionId;
+    const { connectionId } = event.requestContext;
     const room = JSON.parse(event.body).value;
-    var params = {
-        TableName: "id-room",
-        Item: {'ID': connectionId, 'Room': room}
+
+    const updateParams = {
+        TableName: "room-messages-users",
+        Key: {room: room},
+        ExpressionAttributeNames: {
+            '#users': 'users'
+        },
+        ExpressionAttributeValues: {
+            ':users': [connectionId],
+            ':empty_list': []
+        },
+        UpdateExpression: 'set #users = list_append(if_not_exists(#users, :empty_list), :users)'
     };
 
     var returnVal = {
         statusCode: 200,
         body: {}
     };
-
-    await db.put(params).promise()
-    .catch((err) => {
-        returnVal.body.writeStatus = "FAIL";
-    })
+    await db.update(updateParams).promise()
     .then(() => {
-        returnVal.body.writeStatus = "SUCCESS";
+        console.log("Append Success");
+    })
+    .catch((err) => {
+        console.log("ERROR APPENDING: ", err);
     });
 
+
     const scanParams = {
-        TableName: "messages-room",
+        TableName: "room-messages-users",
         FilterExpression: "room = :this_room",
         ExpressionAttributeValues: {":this_room": room}
     };
+
     await db.scan(scanParams).promise()
     .then((data) => {
         console.log(data);
         returnVal.body.scanStatus = "SUCCESS";
-        let messages = data.Items.map((elem) => {return elem.message});
-        returnVal.body.messages = [...new Set(messages)];
+        returnVal.body.messages = data.Items[0].messages.map((elem) => {return elem});
         returnVal.body.type = "multi-message";
     })
     .catch((err) => {

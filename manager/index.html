@@ -95,11 +95,20 @@
             }
 
             function createNewRoom() {
-                let room = document.getElementById("newroom").value;
-                chatRoom.sendWebsocketMessage({
-                    action: _routes.NEW_ROOM,
+                const room = document.getElementById("newroom").value;
+                const existingRooms = document.getElementsByClassName("message-room-button");
+                let flag = false;
+                for (let elem of existingRooms) {
+                    if (elem.innerHTML == room) {
+                        flag = true;
+                    }
+                }
+                // If the flag is true... add a little pop up saying the room already exists?
+                const params = {
+                    action: flag ? _routes.JOIN : _routes.NEW_ROOM,
                     value: room
-                });
+                };
+                chatRoom.sendWebsocketMessage(params);
                 toggleRoom(room);
             }
 

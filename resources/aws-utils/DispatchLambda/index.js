@@ -19,25 +19,26 @@ exports.handler = async (event) => {
     };
 
     const scanParams = {
-        TableName : "id-room",
+        TableName : "room-messages-users",
         ExpressionAttributeValues: {":r": room},
-        FilterExpression: "Room = :r",
-        ProjectionExpression: "ID"
+        FilterExpression: "room = :r",
+        ProjectionExpression: "#users",
+        ExpressionAttributeNames: {"#users": "users"}
     };
 
-    const scan = await db.scan(scanParams, function(err, data) {
-        if (err) {
-            console.log(err);
-            returnVal.body.scanStatus = "SCAN-ERROR";
-            returnVal.body = JSON.stringify(returnVal.body);
-            return returnVal;
-        }
-        else returnVal.body.scanStatus = "SCAN-SUCCESS";
-    }).promise();    
-    
-    connectionData = scan.Items.map(elem => {
-        return elem.ID;
-    });
+    let connectionData;
+    const scan = await db.scan(scanParams).promise()
+    .then((data) => {
+        returnVal.body.scanStatus = "SUCCESS";
+        console.log(data.Items[0]);
+        connectionData = data.Items[0].users.map((elem) => {
+            return elem;
+        })
+    })
+    .catch((err) => {
+        console.log("SCAN ERROR", err);
+        returnVal.body.scanStatus = "FAIL";
+    });    
 
     var message = JSON.stringify({
         message: value, 
@@ -49,40 +50,62 @@ exports.handler = async (event) => {
         apiVersion: '2018-11-29',
         endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
     });
-
-    const postCalls = connectionData.map(async ( connectionId ) => {
+    let count = 0;
+    for (let connectionId of connectionData) {
+        console.log(count);
         try {
             await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise();
         } catch (e) {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionId}`);
-                //await db.delete({TableName: "id-room", Key: { ID: connectionId }}).promise();
+                const updateParams = {
+                    TableName: "room-messages-users", 
+                    Key: { room: room },
+                    UpdateExpression: 'REMOVE #users[' + count + ']',
+                    ExpressionAttributeNames: {
+                        '#users': 'users'
+                    }
+                };
+                await db.update(updateParams).promise()
+                .then(() => {
+                    console.log("SUCCESS")
+                })
+                .catch((err) => {
+                    console.log("ERROR during deleting old connection", err);
+                });
                 await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
+                count--;
             } else {
                 returnVal.body.dispatchStatus = "FAIL";
                 throw e;
             }
         }
-    });
-    Promise.all(postCalls);
+        count++;
+    }
+
     returnVal.body.dispatchStatus = "SUCCESS";
-    const insert = await db.put({
-        TableName: "messages-room", 
-        Item: {
-            message: {
+    await db.update({
+        TableName: "room-messages-users",
+        Key: {room: room},
+        ExpressionAttributeNames: {
+            '#messages': 'messages'
+        },
+        ExpressionAttributeValues: {
+            ':messages': [{
                 user: name,
-                content: value
-            }, 
-            room: room,
-            time: time.toLocaleString(undefined, {
-                day: 'numeric',
-                month: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-            })
-        }
+                content: value,
+                time: time.toLocaleString(undefined, {
+                    day: 'numeric',
+                    month: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                })
+            }],
+            ':empty_list': []
+        },
+        UpdateExpression: 'set #messages = list_append(if_not_exists(#messages, :empty_list), :messages)',
     }).promise()
     .catch((err) => {
         console.log("ERROR during place: ", err);

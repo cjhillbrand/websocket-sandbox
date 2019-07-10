@@ -12,22 +12,26 @@ AWS.config.update({region: 'us-east-1'})
 exports.handler = async (event) => {
     console.log(' EVENT:',event);
     const { value } = JSON.parse(event.body);
-    const connectionId = event.requestContext.connectionId;
+    const { connectionId } = event.requestContext;
     const db = new AWS.DynamoDB.DocumentClient();
     var returnVal = {
         statusCode: 200,
         body: {}
     };
-    console.log(value, connectionId);
+    
     const writeParam = {
-        TableName: "id-room",
-        Item: {'ID': connectionId,'Room': value}
+        TableName: "room-messages-users",
+        Item: {'room': value, users: [connectionId]},
     }
+
+    // We handle uniqueness on the client side. Not sure if 
+    // we should double check here for concurruncy issues...
     const write = await db.put(writeParam).promise()
     .then(() => {
         returnVal.body.write = "SUCCESS";
     })
     .catch(err => {
+        console.log("ERROR WRITE", err);
         returnVal.body.write = "FAIL";
     });
     
@@ -61,46 +65,40 @@ exports.handler = async (event) => {
         endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
     });
 
-    const postCalls = connectionData.map(async ( connectionId ) => {
-        console.log('POSTCALLS:', connectionId);
-        await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise()
-        .then(() => console.log("SUCCESS sending to: ", connectionId))
-        .catch(e => {
+    let count = 0;
+    for (let connectionId of connectionData) {
+        console.log(count);
+        try {
+            await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise();
+        } catch (e) {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionId}`);
-                db.delete({TableName: "id-room", Key: { ID: connectionId }});
-                db.delete({TableName: "client-records", Key: { ID: connectionId }});
+                const updateParams = {
+                    TableName: "room-messages-users", 
+                    Key: { room: room },
+                    UpdateExpression: 'REMOVE #users[' + count + ']',
+                    ExpressionAttributeNames: {
+                        '#users': 'users'
+                    }
+                };
+                await db.update(updateParams).promise()
+                .then(() => {
+                    console.log("SUCCESS")
+                })
+                .catch((err) => {
+                    console.log("ERROR during deleting old connection", err);
+                });
+                await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
+                count--;
             } else {
-                console.log("ERROR line 67");
                 returnVal.body.dispatchStatus = "FAIL";
                 throw e;
             }
-        })
-    });
-    Promise.all(postCalls)
-    .then(() => {
-        console.log("All promises sent");
-    });
+        }
+        count++;
+    }
     returnVal.body.dispatchStatus = "SUCCESS";
 
-    scanParams = {
-        TableName: "messages-room",
-        FilterExpression: "room = :this_room",
-        ExpressionAttributeValues: {":this_room": value}
-    };
-    await db.scan(scanParams).promise()
-    .then((data) => {
-        console.log(data);
-        returnVal.body.scanStatus = "SUCCESS";
-        let messages = data.Items.map((elem) => {return elem.message});
-        returnVal.body.messages = [...new Set(messages)];
-        returnVal.body.type = "multi-message";
-    })
-    .catch((err) => {
-        console.log("FAIL: ", err);
-        returnVal.body.scanStatus = "FAIL";
-    });
-    
     returnVal.body = JSON.stringify(returnVal.body);
     console.log(' RETURNVAL - FINAL:' , returnVal);
     return returnVal;
