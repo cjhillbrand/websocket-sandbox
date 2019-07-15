@@ -1,10 +1,7 @@
 # Websocket-Lab
-Welcome to the Websocket-Lab. The purpose of this lab is to introduce users to the AWS Websocket capability.
+Welcome to the Websocket-Lab. The purpose of this lab is to introduce yourself to the AWS Websocket capability.
 Released on December 18, 2018, this service is still fairly new. The good news is, is that this service piggie
-backs off of the well established API Gateway. (To read more about the release please visit [here](https://aws.amazon.com/blogs/compute/announcing-websocket-apis-in-amazon-api-gateway/)).
-
-As we begin to explore how websockets are deployed on AWS we will also be indirectly interacting with a few other key resources. If you have never built
-anything on AWS, it is important to know that rarely will any one project use one service. Think of AWS services/products as very interchangaeble building blocks, where the the finished product is indeed greater than the sum of its parts. 
+backs off of the well established API Gateway. (To read more about the release please visit [here](https://aws.amazon.com/blogs/compute/announcing-websocket-apis-in-amazon-api-gateway/)). 
 
 Please refer below for a short description of the services used in this lab:
 * **IAM Roles and Policies**: AWS offers users the IAM service to users as a way to enhance security among the products that they use.
@@ -21,5 +18,28 @@ To read more please visit: [here](https://aws.amazon.com/dynamodb/)
 a message is sent to the APIGatway that containts the action as "message" that route will be taken. It is important to note that 
 APIGateway websocket has three defualt routes: $connect, $disconnect, and $default. These routes are triggered when a socket is opened, closed, and have no other matching routes respectively.
 To read more please visit: [here](https://aws.amazon.com/api-gateway/)
-* **AWS Cognito** (maybe): ...
 * On *the programming side*: We are using raw unadultarated javascript and html for the browser and User Interface. And for the lambda function we are using node.js version 10.
+
+## Pre-Requisites
+In order to complete this lab the following are required to have access to the following:
+* AWS IAM
+* DynamoDB
+* Lambda
+* API Gateway 
+
+## Context
+In this lab we are going to create 7 microservices. That manage and operate a fully functional chat room.
+
+* There is the **client-records** and **room-messages-users** table. These store the messages, users, and active rooms for any session.
+* There are a few lambda functions. Each have their own respective action.
+    * **Connect**: this function is used to store the connection ID in DynamoDb
+    * **Register User**: This function is used to store the username in DynamoDB
+    * **Create Room** This function is used to store the new room in DynamoDB.
+    * **Join Room**: This function is used to store what room the has joined in DynamoDB
+    * **Send Message**: This function is used to send messages to anyone in the chat room, and record in DynamoDB.
+    * **Leave Room**: This function is used to update DynamoDB to reflect that a user has left.
+    * **Disconnect** This function cleans up any session data that was related to the user that disconnected.
+
+There are seven lambda cuntions for this lab to show that once orientated with the WebSocket API and the microservice pattern, you can then easily deploy new services with ease.
+
+
