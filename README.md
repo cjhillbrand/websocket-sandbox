@@ -40,6 +40,60 @@ In this lab we are going to create 7 microservices. That manage and operate a fu
     * **Leave Room**: This function is used to update DynamoDB to reflect that a user has left.
     * **Disconnect** This function cleans up any session data that was related to the user that disconnected.
 
-There are seven lambda cuntions for this lab to show that once orientated with the WebSocket API and the microservice pattern, you can then easily deploy new services with ease.
+There are seven lambda Funtions for this lab to show that once orientated with the WebSocket API and the microservice pattern, you can then easily deploy new services with ease.
+
+## Task 1: Creating DynamoDB Tables
+
+### Step 1: Create the first table
+1. Visit the DynamoDB console.
+2. Click on the **Create Table** button.
+3. At this stage:
+    3.1. Enter **"client-records"** for table name.
+    3.2. Enter **"ID"** for the primary key.
+    3.3. Press **create**
+4. This is going to start spinning up our first table.
+### Step 2: Create the Second table
+1. Click on the **Create Table** button.
+2. At this stage:
+    2.1. Enter **"room-messages-users"** for table name.
+    2.2. Enter **"room"** for the primary key.
+    2.3. Press **create**.
+
+Wait until both tables are created and that the table names and primary keys are correct. *Make sure to note casing for primary keys*
+
+## Task 2: Creating the Lambda functions
+### Step 1: Creating the Lambda Functions and inputting code. 
+Each Lambda function has it's own source code, and needs its own permissions assigned to its role. Refer to the table below for configurations.
+
+| Function Name | Location of Source (Relative to /resources/aws-utils/) | Permissions        |
+|---------------|--------------------------------------------------------|--------------------|
+| Connect       | ConnectionLambda/index.js                              | DynamoDB           |
+| RegisterUser  | RegisterUserLambda/index.js                            | DynamoDB           |
+| CreateRoom    | CreateRoomLambda/index.js                              | DynamoDB WebSocket |
+| JoinRoom      | JoinRoomLambda.index.js                                | DynamoDB           |
+| SendMessage   | DispatchLambda/index.js                                | DynamoDB WebSocket |
+| LeaveRoom     | LeaveRoomLambda/index.js                               | DynamoDB WebSocket |
+| Disconnect    | DisconnectLambda/index.js                              | DynamoDB WebSocket |
+
+1. Navigate to the Lambda Dashboard
+2. For each Lambda Function above:
+    2.1. Click on the button **creae a function** If the button is not visible, check on the console for a menu on the left, with the label *functions*, and then hit on the ***Create Function*** button.
+    2.2. Select **Author From Scratch** 
+    2.3 Under the section **Basic Information**:
+        2.3.1. For Function name put the function name listed in the table above.
+        2.3.2. For **Runtime**, select the latest supported version for Node.js
+        2.3.3. For **Permissions**, we need to give the lambda function the required permissions we have listed above.
+            * Click on **Choose or create an execution role**. This unfolds a section where we can trigger the creation of the role for our lambda function.
+            * For execution Role, select **Create new role from AWS policy templates**. This will expand two fields below the section: 
+                * For the **Role Name** input the *function-name*Role 
+                * Do not select anything for the **Policy template** field.
+    2.4 Click the **Create Function** button on the bottom of the right hand side of the page. You should now be taken to the dashboard of that lambda function.
+    2.5. Scroll down to where you see the function code. It looks like a code editor and should have one open tab with the file *index.js* 
+    2.6. Copy and paste the code for each function (located in the table above) into the editor. Click **Save** in the top right corner when finished.
+        * Take some time and read over the code for each function. They either perform some action to DynamoDB or send a message via the websocket. Moving forward this fundamental understanding of the code helps understand how our chatroom deals with the information given to it. 
+
+## Task 3: Creating the WebSocket on API Gateway
+
+## Task 4: Creating the GUI for the Chatroom
 
 
