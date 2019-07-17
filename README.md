@@ -33,7 +33,7 @@ In this lab we are going to create 3 microservices. That manage and operate a fu
 * There is the **client-records** table. This stores the ConnectionIDs for all of the users.
 * There are a few lambda functions. Each have their own respective action.
     * **Connect**: this function is used to store the connection ID in DynamoDb
-    * **Send Message**: This function is used to send messages to anyone in the chat room, and record in DynamoDB.
+    * **Send Message**: This function is used to send messages to anyone in the chat room.
     * **Disconnect** This function cleans up any session data that was related to the user that disconnected.
 
 There are three lambda Funtions for this lab to show that once orientated with the WebSocket API and the microservice pattern, you can then easily deploy new services with ease.
@@ -48,9 +48,9 @@ Before we begin with tasks, it is recommended that you clone the GitHub Repo to 
     1. Enter **"client-records"** for table name.
     2. Enter **"ID"** for the primary key.
     3. Press **create**
-4. This is going to start spinning up our first table.
+4. This is going to start spinning up our table.
 
-Wait until the table is created and that the table name and primary keys are correct. *Make sure to note casing for primary key*
+Wait until the table is created and that the table name and primary keys are correct. *Make sure to note **casing** for primary key*
 
 ## Task 2: Creating the Lambda functions
 Each Lambda function has it's own source code, and needs its own permissions assigned to its role. Refer to the table below for configurations.
@@ -65,7 +65,7 @@ Each Lambda function has it's own source code, and needs its own permissions ass
 
 1. Navigate to the Lambda Dashboard
 2. For each Lambda Function above:
-    1. Click on the button **creae a function** If the button is not visible, check on the console for a menu on the left, with the label *functions*, and then hit on the ***Create Function*** button.
+    1. Click on the button **create a function** If the button is not visible, check on the console for a menu on the left, with the label *functions*, and then hit on the ***Create Function*** button.
     2. Select **Author From Scratch** 
     3. Under the section **Basic Information**:
         1. For Function name put the function name listed in the table above.
@@ -73,12 +73,14 @@ Each Lambda function has it's own source code, and needs its own permissions ass
         3. For **Permissions**, we need to give the lambda function the required permissions we have listed above.
             * Click on **Choose or create an execution role**. This unfolds a section where we can trigger the creation of the role for our lambda function.
             * For execution Role, select **Create new role from AWS policy templates**. This will expand two fields below the section: 
-                * For the **Role Name** input the *function-name*Role 
+                * For the **Role Name** input the *function-name* + Role, so for example the **Connect** function's role would be **ConnectRole**. 
                 * Do not select anything for the **Policy template** field.
     4. Click the **Create Function** button on the bottom of the right hand side of the page. You should now be taken to the dashboard of that lambda function.
     5. Scroll down to where you see the function code. It looks like a code editor and should have one open tab with the file *index.js* 
     6. Copy and paste the code for each function (located in the table above) into the editor. Click **Save** in the top right corner when finished.
-        * Take some time and read over the code for each function. They either perform some action to DynamoDB or send a message via the websocket. Moving forward this fundamental understanding of the code helps understand how our chatroom deals with the information given to it. *Note: The code for each function is made to handle this lab and the extended lab. There is a comment in each .js file that says **This is the beginning of the code for the extended lab.** feel free to continue reading but is only neccessary for the extended lab.*
+        * Take some time and read over the code for each function. They either perform some action to DynamoDB or send a message via the websocket. Moving forward this fundamental understanding of the code helps understand how our chatroom deals with the information given to it. 
+        
+        *Note: The code for each function is made to handle this lab and the extended lab. There is a comment in each .js file that says **This is the beginning of the code for the extended lab.** Feel free to continue reading but is only neccessary for the extended lab.*
 
 ### Step 2: Adjusting Permissions
 *Note: For Lambda functions that need permissions to our WebSocket, we need to first receive the ARN for our WebSocket before attaching the permission. With this in mind the two functions that need this permission require us to complete this step after we have created the Websocket* 
@@ -132,7 +134,7 @@ While still on the page thats titled *Provide information about the target backe
 3. Keep track of the **WebSocket URL** this is used in our local code.
 
 ## Task 4: Creating the GUI for the Chatroom
-*Note: This task is completed using a **Google Chrome Browser***
+*Note: This task is completed using a **Google Chrome Browser**, but feel free to use what you are comfortable with*
 ### Step 1: Configure Websocket on the UI
 1. On your local machine navigate to: websocket-sandbox/resources/aws-utils.js
 2. Under the **AWS_CONFIG** for the key **websocket** enter the Websocket URL we grabbed in the last task.
@@ -147,10 +149,10 @@ While still on the page thats titled *Provide information about the target backe
 if everything up to this point has worked there should be one event logged in our console.
 
 4. The moment we have been waiting for, sending and receiving messages.
-    1. Since this is the basic chatroom, we did not introduce the ability for custom names, or the creation of joining chatrooms. If you are interested in doing this take a look at the **Extended Lab** which walks through how to do this. To make sure that our UI knows we are in a *Simple Mode*
-    * enter **no-rooms** in the **Please Enter a Name** text box.
-    * Click **Register**
-    * The **Submit** button under the message text box should now be enabled.
+    1. Since this is the basic chatroom, we did not introduce the ability for custom names, or the creation of joining chatrooms. If you are interested in doing this take a look at the **Extended Lab** which walks through how to do this. To make sure that our UI knows we are in a *Simple Mode*:
+        * enter **no-rooms** in the **Please Enter a Name** text box.
+        * Click **Register**
+        * The **Submit** button under the message text box should now be enabled.
     If not refresh the page, enter **no-rooms** and try again.
     2. Enter any message in the text box labeled **Type a Message here**
     3. Press **Submit** under the text box.
@@ -179,4 +181,71 @@ const AWS_CONFIG = {
 ```
 now everyone should have the same websocket URL. 
 **Congratulations you are done with this lab! Have fun and send messages to eachother!**
+
+# Extended Lab
+The purpose of this extended portion is:
+1. introduce more functionality into our chatroom.
+2. Demonstrate the ease at which you can build more microservice on top of the WebSocket.
+
+## Task 1: Create **ANOTHER** DynamoDB Table
+Follow the steps in the Simple lab for Task 1 and create another DynamoDB Table, but change the following:
+1. Table Name: **room-messages-users**
+2. Primary Key: **room**
+
+## Task 2: Deploying **MORE** Lambda functions.
+| Function Name | Location of Source (Relative to /resources/aws-utils/) | Permissions        | Route      |
+|---------------|--------------------------------------------------------|--------------------|------------| 
+| RegisterUser  | RegisterUserLambda                                     | DynamoDB           | register   |
+| CreateRoom    | CreateRoomLambda/index.js                              | DynamoDB WebSocket | new-room   |
+| JoinRoom      | JoinRoomLambda/index.js                                | DynamoDB WebSocket | join-room  |
+| LeaveRoom     | LeaveRoomLambda/index.js                               | DynamoDB WebSocket | leave-room |
+
+### Step 1: Create the new Lambda Functions
+For this task we are going to follow the same instructions as Task 2 in the Simple Lab, except just be sure to use the correct names, source code, and role.json when configuring. (Which is located under the directory listed above.)
+
+### Step 2: Update our old Lambda Functions' Permissions
+We also need to go back and edit some of our permissions to some of our lmabda functions. The two that we need to go back and edit are **Disconnect** and **SendMessage**.
+1. Go to the lambda dashboard.
+2. Select the lambda function you want to alter.
+3. Scroll down to **Execution Role** and press the link to the role name.
+4. Click on the role with the policy type **inline policy** This should have a drop down menu appear:
+5. Click **Edit Policy**
+6. Click **JSON**
+7. Input updated permissions:
+    1. On your local machine, find the correct directory for the function you are working with, labeled above.
+    2. Copy the **role-extended.json** and paste into the editor
+8. Click **Review Policyy**
+9. Finally Click **Save Changes**
+
+*Note: You must re-enter the custom ARNs into the new policies for newly made functions and revised policies. This **WILL** cause issues if this isnt configured properly.*
+
+## Task 3: Adding **MORE** Routes to our WebSocket
+1. Navigate to the API Gateway Dashboard and click on your websocket, **chatroom-websocket**. 
+2. Click on the **routes** tab on the sidebar.
+3. Create a new route with the **route name** in the table above 
+4. When you're done creating the route make sure to click the **Add Integration Response** to each one.
+    This allows us to return a JSON object from our function back to the local client.
+
+
+That's it! Now your chatroom has full functional chatrooms and user names!
+
+# Cleaning Up
+1. Delete all Lambda functions in the Lambda dashboards 
+2. Delete all roles associated with the lambda functions **AND** the role attached to API Gateway
+3. Delete the WebSocket from API Gateway
+4. Delete all tables from DynamoDB.
+
+# Looking to the Future
+
+Q. How can we federate who accesses the websocket? 
+
+A. Using a combination of Cognito and IAM Permissions/Groups we can federate who can access the websocket URL and we can actually give different access to different users! If we wanted one person to have access to send a message and another group not to, this can all be done with Cognito and IAM. Read more about Cognito [here](https://aws.amazon.com/cognito/).
+
+Q. I understand that I accessed my chatroom file on my local machine, but I want anyone on the internet to access it, how can I do this?
+
+A. There are definitely plenty of ways! In the spirit of the lab there is a serverless approach that uses several different services:
+* Route 53: This is AWS' DNS resolver, and also domain registrar.
+* CloudFront: This is AWS' CDN, utilizing edge capabilities we can deliver our chatroom to users accross different regions and still give them a reliable performance (or even better...?).
+* S3: Place all of our static content here! This is a cheap, easy, and secure way to store our files. S3 also has website hosting capabilities.
+
 

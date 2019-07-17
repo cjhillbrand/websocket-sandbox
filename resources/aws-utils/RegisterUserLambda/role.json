@@ -1,0 +1,16 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:Scan",
+                "dynamodb:UpdateItem"
+            ],
+            "Resource": [
+                "<Your DynamoDB 'client-records' ARN>",
+                "<Your DynamoDB 'room-messages-users' ARN"
+            ]
+        }
+    ]
+}
