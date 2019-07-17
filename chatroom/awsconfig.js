@@ -20,3 +20,4 @@ const _message_types = {
     DELETE_ROOM: "delete-room"
 }
 
+const SIMPLE = "no-rooms"

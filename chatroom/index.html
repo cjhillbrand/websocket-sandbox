@@ -82,13 +82,20 @@
             }
 
             function signUpUser() {
-                chatRoom.sendWebsocketMessage({
-                    action: _routes.REGISTER, 
-                    value: document.getElementById("name").value 
-                });
-                let buttons = ["sign-up-button", "create-new-room-button"];
-                buttons.map(label => {toggle(label)});
+                let name = document.getElementById("name").value
+                let buttons;
+                if (name.toLowerCase() == SIMPLE) {
+                    chatRoom.update({name: SIMPLE});
+                    buttons = ["sign-up-button", "send-message-button"];
+                } else {
+                    chatRoom.sendWebsocketMessage({
+                        action: _routes.REGISTER, 
+                        value: name
+                    });
+                    buttons = ["sign-up-button", "create-new-room-button"];
+                }
                 chatRoom.update({name: document.getElementById("name").value});
+                buttons.map(label => {toggle(label)});
             }
 
             function createNewRoom() {

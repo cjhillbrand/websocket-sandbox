@@ -10,13 +10,45 @@ AWS.config.update({region: 'us-east-1'})
  * request)
  */
 exports.handler = async (event) => {
-    const { value, room, name } = JSON.parse(event.body);
+    const { value, room, name } = JSON.parse(event.body);    
     var db = new AWS.DynamoDB.DocumentClient();
     const time = new Date();
     var returnVal = {
         statusCode: 200,
         body: {}
     };
+
+    const apigwManagementApi = new AWS.ApiGatewayManagementApi({
+        apiVersion: '2018-11-29',
+        endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
+    });
+
+    var message = JSON.stringify({
+        message: value, 
+        user: name,
+        type: "client-message"
+    });
+
+    if (name == "no-rooms") {
+        let connectionData
+        await db.scan({TableName: "client-records"}).promise()
+        .then((data) => {
+            returnVal.body.scanStatus = "SUCCESS";
+            connectionData = data.Items.map((elem) => {return elem.ID} )
+        });
+        console.log(connectionData);
+        for (let connectionId of connectionData) {
+            try {
+                await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise();
+            } catch (e) {
+                if (e.statusCode == 410) {
+                    await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
+                }
+            }
+        }
+        returnVal.body = JSON.stringify(returnVal.body);
+        return returnVal;
+    }
 
     const scanParams = {
         TableName : "room-messages-users",
@@ -40,16 +72,6 @@ exports.handler = async (event) => {
         returnVal.body.scanStatus = "FAIL";
     });    
 
-    var message = JSON.stringify({
-        message: value, 
-        user: name,
-        type: "client-message"
-    });
-
-    const apigwManagementApi = new AWS.ApiGatewayManagementApi({
-        apiVersion: '2018-11-29',
-        endpoint: event.requestContext.domainName + '/' + event.requestContext.stage
-    });
     let count = 0;
     for (let connectionId of connectionData) {
         console.log(count);

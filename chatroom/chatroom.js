@@ -37,7 +37,6 @@ class ChatRoom {
         this.state.connected = true;
         this.state.socket.onopen = function(e) {
             console.log(e);
-            // Figure out other useful info to store in result;
             document.getElementById('overlay').style.display = 'none';
         };
         this.setMessageListener();
@@ -131,10 +130,11 @@ class ChatRoom {
                         + elem + '</button>',
                     value: elem,
                 });
-            } else if (data.type == _message_types.MESSAGE && this.state.name && this.state.room) {
+            } else if (data.type == _message_types.MESSAGE && 
+                (this.state.name && this.state.room || this.state.name == SIMPLE)) {
                 appendList({
                     list: 'currentmessages',
-                    html: data.user + ' said: ' + data.message,
+                    html: this.state.name == SIMPLE ? data.message : data.user + ' said: ' + data.message,
                     value: data.user + data.message,
                 });
             } else if (data.type == _message_types.MULTI_MESSAGE) {
