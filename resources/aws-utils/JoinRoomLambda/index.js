@@ -1,5 +1,5 @@
-var AWS = require('aws-sdk')
-AWS.config.update({region: 'us-east-1'})
+var AWS = require('aws-sdk');
+AWS.config.update({region: 'us-east-1'});
 
 
 /******************************************************************\
@@ -51,7 +51,7 @@ exports.handler = async (event) => {
     .catch((err) => {
         returnVal.body.transactWrite = "FAIL";
         console.log("FAIL on TRANSACTION ", err);
-    })
+    });
 
     const scanParams = {
         TableName: "room-messages-users",
@@ -77,4 +77,4 @@ exports.handler = async (event) => {
     });
     returnVal.body = JSON.stringify(returnVal.body);
     return returnVal;
-}
+};

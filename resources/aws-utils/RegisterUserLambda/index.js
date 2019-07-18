@@ -1,5 +1,5 @@
-var AWS = require('aws-sdk')
-AWS.config.update({region: 'us-east-1'})
+var AWS = require('aws-sdk');
+AWS.config.update({region: 'us-east-1'});
 
 /*******************************************************************\
  * This is the Register User Lambda. This is for the extended lab   *
@@ -18,14 +18,14 @@ exports.handler = async(event) => {
         body: {
             type: "signup",
         }
-    }
+    };
     const updateParams = {
         TableName: "client-records",
         Key: {ID: connectionId},
         UpdateExpression: "set #N = :name",
         ExpressionAttributeNames: {"#N": "name"},
         ExpressionAttributeValues: {":name": username},
-    }
+    };
     await db.update(updateParams).promise()
     .then(() => {
         returnVal.body.updateStatus = "SUCCESS";
@@ -40,19 +40,19 @@ exports.handler = async(event) => {
         AttributesToGet: ['room']
     };
 
-    const read = await db.scan(readParams).promise()
+    await db.scan(readParams).promise()
     .then((data) => {
-        rooms = data.Items.map((elem) => {
+        let rooms = data.Items.map((elem) => {
             return elem.room;
-        })
+        });
         rooms = [...new Set(rooms)];
         returnVal.body.rooms = rooms;
     })
     .catch((err) => {
         console.log("ERROR on READ", err);
-        returnVal.body.rooms = "FAIL"
+        returnVal.body.rooms = "FAIL";
     });
 
     returnVal.body = JSON.stringify(returnVal.body);
     return returnVal;
-}
+};

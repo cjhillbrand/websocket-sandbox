@@ -31,6 +31,8 @@ In order to complete this lab you are required to have access to the following:
 * Lambda
 * API Gateway 
 
+# Basic Lab
+
 ## Context
 In this lab we are going to create 3 microservices. These microservices manage and operate a functional chat room.
 
@@ -205,6 +207,8 @@ The purpose of this extended portion is:
 1. introduce more functionality into our chatroom.
 2. Demonstrate the ease at which you can build more microservice on top of the WebSocket.
 
+*Note: This lab must be done once the first lab is done*
+
 ## Task 1: Create **ANOTHER** DynamoDB Table
 Follow the steps in the Simple lab for Task 1 and create another DynamoDB Table, but change the following:
 1. Table Name: **room-messages-users**
@@ -232,6 +236,14 @@ We also need to go back and edit some of our permissions to some of our lmabda f
 7. Input updated permissions:
     1. On your local machine, find the correct directory for the function you are working with, labeled above.
     2. Copy the **role-extended.json** and paste into the editor
+    
+    *Note: For Dispatch you are only adding one more resource, which is the newly created DynamoDB table. Copying and pasting may not be the quickest way to update this, instead I suggest changing the resource to be:*
+    ```javascript
+    "Resource": [
+        "*"
+    ]
+    ```
+    *But this does give access to all DynamoDB Tables.*
 8. Click **Review Policyy**
 9. Finally Click **Save Changes**
 
@@ -239,10 +251,15 @@ We also need to go back and edit some of our permissions to some of our lmabda f
 
 ## Task 3: Adding **MORE** Routes to our WebSocket
 1. Navigate to the API Gateway Dashboard and click on your websocket, **chatroom-websocket**. 
-2. Click on the **routes** tab on the sidebar.
-3. Create a new route with the **route name** in the table above 
-4. When you're done creating the route make sure to click the **Add Integration Response** to each one.
-    This allows us to return a JSON object from our function back to the local client.
+2. Click on the **routes** tab on the sidebar. Do the following for each new route:
+    3. Create a new route with the **route name** in the table above 
+    4. When you're done creating the route make sure to click the **Add Integration Response** to each one.
+        This allows us to return a JSON object from our function back to the local client.
+3. When you have created 4 new routes and configured their lambda response correctly, click on **Actions** 
+4. Finally click **Deploy API**
+    1. For stage name, choose **Development** 
+    2. For description choose whatever you like.
+5. Click **Deploy**
 
 
 That's it! Now your chatroom has full functional chatrooms and user names!

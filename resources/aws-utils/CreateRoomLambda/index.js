@@ -1,5 +1,5 @@
-var AWS = require('aws-sdk')
-AWS.config.update({region: 'us-east-1'})
+var AWS = require('aws-sdk');
+AWS.config.update({region: 'us-east-1'});
 
 /*********************************************************************\
  * This is the create room lambda function. This function is used for *
@@ -44,14 +44,14 @@ exports.handler = async (event) => {
     .catch((err) => {
         console.log("ERROR on TRANSACTION: ", err);
         returnVal.body.transactWrite = "FAIL";
-    })
+    });
     
     let connectionData;
     let scanParams = {
         TableName : "client-records"
     };
 
-    const scan = await db.scan(scanParams).promise()
+    await db.scan(scanParams).promise()
     .then(val => {
         returnVal.body.scan = "SUCCESS";
         console.log("INSIDE SCAN: ", val);
@@ -94,4 +94,4 @@ exports.handler = async (event) => {
     returnVal.body = JSON.stringify(returnVal.body);
     console.log(' RETURNVAL - FINAL:' , returnVal);
     return returnVal;
-}
+};

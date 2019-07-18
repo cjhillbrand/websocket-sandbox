@@ -1,5 +1,5 @@
-var AWS = require('aws-sdk')
-AWS.config.update({region: 'us-east-1'})
+var AWS = require('aws-sdk');
+AWS.config.update({region: 'us-east-1'});
 
 
 /*******************************************************************************\
@@ -127,8 +127,8 @@ exports.handler = async (event) => {
         })
         .catch((err) => {
             console.log('REMOVE FAIL');
-        })
+        });
     }
     returnVal.body = JSON.stringify(returnVal.body);
     return returnVal;
-}
+};

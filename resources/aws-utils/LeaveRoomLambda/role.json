@@ -14,11 +14,13 @@
                 "dynamodb:DeleteItem",
                 "dynamodb:Scan",
                 "dynamodb:UpdateItem",
-                "dynamodb:PutItem"                
+                "dynamodb:PutItem",
+                "dynamodb:GetItem"                
             ],
             "Resource": [
                 "<Your DynamoDB 'client-records' ARN>",
-                "<Your DynamoDB 'room-messages-users' ARN"
+                "<Your DynamoDB 'room-messages-users' ARN>",
+                "<Or you can just put '*'>"
             ]
         }
     ]

@@ -17,7 +17,8 @@
             ],
             "Resource": [
                 "<Your DynamoDB 'client-records' ARN>",
-                "<Your DynamoDB 'room-messages-user' ARN"
+                "<Your DynamoDB 'room-messages-user' ARN",
+                "<Or you can just put '*'>"
             ]
         }
     ]
