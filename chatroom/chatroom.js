@@ -99,7 +99,6 @@ class ChatRoom {
         const messageListener = function(e) {
             console.log(e);
             const data = JSON.parse(e.data);
-            console.log(data.type);
             // When a user gets a username
             if (data.type == _message_types.SIGNUP) {
                 data.rooms.map((elem) => {

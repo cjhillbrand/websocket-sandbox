@@ -25,19 +25,19 @@ To read more please visit: [here](https://aws.amazon.com/api-gateway/)
 </details>
 
 ## Pre-Requisites
-In order to complete this lab the following are required to have access to the following:
+In order to complete this lab you are required to have access to the following:
 * AWS IAM
 * DynamoDB
 * Lambda
 * API Gateway 
 
 ## Context
-In this lab we are going to create 3 microservices. That manage and operate a functional chat room.
+In this lab we are going to create 3 microservices. These microservices manage and operate a functional chat room.
 
-* There is the **client-records** table. This stores the ConnectionIDs for all of the users.
+* There is the **client-records** table stored in DynamoDB. This stores the connection info for all of the users.
 * There are a few lambda functions. Each have their own respective action.
-    * **Connect**: this function is used to store the connection ID in DynamoDb
-    * **Send Message**: This function is used to send messages to anyone in the chat room.
+    * **Connect**: this function is used to store the connection ID in DynamoDB
+    * **Send Message**: This function is used to send messages to everyone in the chat room.
     * **Disconnect** This function cleans up any session data that was related to the user that disconnected.
 
 There are three lambda Funtions for this lab to show that once orientated with the WebSocket API and the microservice pattern, you can then easily deploy new services with ease.
@@ -46,7 +46,7 @@ Before we begin with tasks, it is recommended that you clone the GitHub Repo to 
 
 ## Task 1: Creating DynamoDB Tables
 
-1. Visit the DynamoDB console.
+1. Visit the [DynamoDB console](https://console.aws.amazon.com/dynamodb/).
 2. Click on the **Create Table** button.
 3. At this stage:
     1. Enter **"client-records"** for table name.
@@ -63,11 +63,11 @@ Each Lambda function has it's own source code, and needs its own permissions ass
 |---------------|--------------------------------------------------------|--------------------|
 | Connect       | ConnectionLambda/index.js                              | DynamoDB           |
 | SendMessage   | DispatchLambda/index.js                                | DynamoDB WebSocket |
-| Disconnect    | DisconnectLambda/index.js                              | DynamoDB WebSocket |
+| Disconnect    | DisconnectLambda/index.js                              | DynamoDB           |
 
 ### Step 1: Creating the Lambda Functions and inputting code. 
 
-1. Navigate to the Lambda Dashboard
+1. Navigate to the [Lambda Dashboard](https://console.aws.amazon.com/lambda/home)
 2. For each Lambda Function above:
     1. Click on the button **create a function** If the button is not visible, check on the console for a menu on the left, with the label *functions*, and then hit on the ***Create Function*** button.
     2. Select **Author From Scratch** 
@@ -87,7 +87,7 @@ Each Lambda function has it's own source code, and needs its own permissions ass
         *Note: The code for each function is made to handle this lab and the extended lab. There is a comment in each .js file that says **This is the beginning of the code for the extended lab.** Feel free to continue reading but is only neccessary for the extended lab.*
 
 ### Step 2: Adjusting Permissions
-*Note: For Lambda functions that need permissions to our WebSocket, we need to first receive the ARN for our WebSocket before attaching the permission. With this in mind the two functions that need this permission require us to complete this step after we have created the Websocket* 
+*Note: For Lambda functions that need permissions to our WebSocket, we need to first receive the ARN for our WebSocket before attaching the permission. With this in mind the one function that needs this permission requires us to complete this step after we have created the Websocket* 
 1. Scroll down on the page of your lambda function and find the section *Execution Role* 
 2. Check to see if there is a link to the role that you created previously. Open that link in another tab of your browser.
 3. We are now at the IAM Access and Policy page for our Role. If we have done everything correctly thus far regarding the permissions there should be none under the *Permission Policies* Table. 
@@ -95,29 +95,40 @@ Each Lambda function has it's own source code, and needs its own permissions ass
 5. Click on the **JSON** Tab. This is where we can add in our custom permissions to our role.
 6. Paste the policy (role.json) in each respective functions folder to the editor.
 7. Replace the \<ARN> with the ARN for the designated resource. 
+8. For the name put, **Custom-Inline-Policy** (since these are inline policies and only in the scope of each respective role there will not be any *naming* overlap)
 
 ## Task 3: Creating the WebSocket on API Gateway
 
 ### Step 1: Create WebSocket
-1. Navigate to the API Gateway page here.
+1. Navigate to the API Gateway console [here](https://console.aws.amazon.com/apigateway/home).
 2. Depending on the state of your account you can find a **Create API** or **Get Started** Button. Click on the one that you see and you are going to be take a create API page.
     1. Press the **WebSocket** radio button for **Choose the Protocol**.
     2. For **API name** put, **chatroom-websocket**
-    3. For **Route Selection Expression** enter the defualt `$request.body.message` 
+    3. For **Route Selection Expression** enter `$request.body.action` 
        *Note: If you want to learn more about routes and what they do click on the **Learn More** button next to the input box*
     4. For Description enter, **WebSocket for a Chatroom web page**.
     5. Click **Create API**
 
 ### Step 2: Creating a role for API Gateway
-1. Go to the IAM dashboard here.
+1. Go to the IAM dashboard [here](https://console.aws.amazon.com/iam/home).
 2. Click on **Roles** 
 3. Click on **Create Role** 
 4. Choose **API Gateway** as the resource and then scroll to the bottom and press next.
 5. Click on **Next: Tags** and then **Next: Review**
 6. For role name enter, **WebSocketAPIRole**, then click **Create**
-7. Copy the **Role ARN** or keep this info handy. We will be using it very shortly.
+7. Confirm the Role was made by clicking on it.
+8. Now we need to add an line policy so our WebSocket can invoke lambda functions
+    1. Go to the repository and find the directory websocket-sandbox/resources/APIGateway
+    2. Copy the file **role.json**
+    3. Go back to the **IAM** webpage
+    4. Click on **+ Add inline policy** 
+    5. Click **JSON** and then paste into the editor.
+    6. Click **review changes**
+    7. For the name put **Custom-Inline-Policy** and then press **Save changes**
+8. Copy the **Role ARN** or keep this info handy. We will be using it very shortly.
 
 ### Step 3: Add a Messaging Route
+1. Head back to the Dashboard of your WebSocket
 1. If you are not already, navigate to the **routes** page.
 2. In the box **New Route Key** enter, **dispatch**, and click the checkmark to the right of the box.
 
@@ -135,12 +146,15 @@ While still on the page thats titled *Provide information about the target backe
 2. For the **Deployment Stage** enter click on **[New Stage]**
     1. For **Stage Name** enter, **development**
     2. You can leave the descriptions blank, or enter what you like.
+    3. Press **Deploy**
 3. Keep track of the **WebSocket URL** this is used in our local code.
+
+*Note: When adjusting permissions for the lambda we couldn't start adjusting for two of them until this step has been completed. Please go back to **Adjusting Permissions** for **Task 2**. The best way to copy the ARNs is to have an **IAM**, **API Gateway** and **DynamoDB** tab open so you can switch between the two copying and pasting ARNs.*
 
 ## Task 4: Creating the GUI for the Chatroom
 *Note: This task is completed using a **Google Chrome Browser**, but feel free to use what you are comfortable with*
 ### Step 1: Configure Websocket on the UI
-1. On your local machine navigate to: websocket-sandbox/resources/aws-utils.js
+1. On your local machine navigate to: websocket-sandbox/chatroom/aws-utils.js
 2. Under the **AWS_CONFIG** for the key **websocket** enter the Websocket URL we grabbed in the last task.
 
 ### Step 2: Test UI Functionality
@@ -241,13 +255,13 @@ That's it! Now your chatroom has full functional chatrooms and user names!
 
 # Looking to the Future
 
-Q. How can we federate who accesses the websocket? 
+**Q.** How can we federate who accesses the websocket? 
 
-A. Using a combination of Cognito and IAM Permissions/Groups we can federate who can access the websocket URL and we can actually give different access to different users! If we wanted one person to have access to send a message and another group not to, this can all be done with Cognito and IAM. Read more about Cognito [here](https://aws.amazon.com/cognito/).
+**A.** Using a combination of Cognito and IAM Permissions/Groups we can federate who can access the websocket URL and we can actually give different access to different users! If we wanted one person to have access to send a message and another group not to, this can all be done with Cognito and IAM. Read more about Cognito [here](https://aws.amazon.com/cognito/).
 
-Q. I understand that I accessed my chatroom file on my local machine, but I want anyone on the internet to access it, how can I do this?
+**Q.** I understand that I accessed my chatroom file on my local machine, but I want anyone on the internet to access it, how can I do this?
 
-A. There are definitely plenty of ways! In the spirit of the lab there is a serverless approach that uses several different services:
+**A.** There are definitely plenty of ways! In the spirit of the lab there is a serverless approach that uses several different services:
 * Route 53: This is AWS' DNS resolver, and also domain registrar.
 * CloudFront: This is AWS' CDN, utilizing edge capabilities we can deliver our chatroom to users accross different regions and still give them a reliable performance (or even better...?).
 * S3: Place all of our static content here! This is a cheap, easy, and secure way to store our files. S3 also has website hosting capabilities.

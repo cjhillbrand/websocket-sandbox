@@ -1,5 +1,5 @@
-var AWS = require('aws-sdk')
-AWS.config.update({region: 'us-east-1'})
+var AWS = require('aws-sdk');
+AWS.config.update({region: 'us-east-1'});
 
  /******************************************************************************\
  * This is the Disconnect Lambda function for the route $disonnect              *
@@ -84,7 +84,7 @@ exports.handler = async (event) => {
             returnVal.body.scanStatus = "SUCCESS";
             connectionData = data.Items.map((elem) => {
                 return elem.ID;
-            })
+            });
         })
         .catch((err) => {
             console.log("ERROR on SCAN: ", err);
@@ -131,8 +131,8 @@ exports.handler = async (event) => {
             console.log('REMOVE SUCCESS');
         })
         .catch((err) => {
-            console.log('REMOVE FAIL');
-        })
+            console.log('REMOVE FAIL', err);
+        });
     }
     
 

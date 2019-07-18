@@ -1,5 +1,5 @@
-var AWS = require('aws-sdk')
-AWS.config.update({region: 'us-east-1'})
+var AWS = require('aws-sdk');
+AWS.config.update({region: 'us-east-1'});
 
 /********************************************************\
  * This is the SendMessage lambda. This lambda for the   *
@@ -35,7 +35,7 @@ exports.handler = async (event) => {
         await db.scan({TableName: "client-records"}).promise()
         .then((data) => {
             returnVal.body.scanStatus = "SUCCESS";
-            connectionData = data.Items.map((elem) => {return elem.ID} )
+            connectionData = data.Items.map((elem) => {return elem.ID});
         });
         console.log(connectionData);
         for (let connectionId of connectionData) {
@@ -60,13 +60,13 @@ exports.handler = async (event) => {
     };
 
     let connectionData;
-    const scan = await db.scan(scanParams).promise()
+    await db.scan(scanParams).promise()
     .then((data) => {
         returnVal.body.scanStatus = "SUCCESS";
         console.log(data.Items[0]);
         connectionData = data.Items[0].users.map((elem) => {
             return elem;
-        })
+        });
     })
     .catch((err) => {
         console.log("SCAN ERROR", err);
@@ -91,7 +91,7 @@ exports.handler = async (event) => {
                 };
                 await db.update(updateParams).promise()
                 .then(() => {
-                    console.log("SUCCESS")
+                    console.log("SUCCESS");
                 })
                 .catch((err) => {
                     console.log("ERROR during deleting old connection", err);

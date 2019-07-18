@@ -1,5 +1,5 @@
-var AWS = require('aws-sdk')
-AWS.config.update({region: 'us-east-1'})
+var AWS = require('aws-sdk');
+AWS.config.update({region: 'us-east-1'});
 
 
 /****************************************************************\
@@ -24,7 +24,7 @@ exports.handler = async (event) => {
         isBase64Encoded: false,
         statusCode: 200,
         body: {}
-    }
+    };
 
     await db.put(params).promise()
     .then(() => {
@@ -32,9 +32,9 @@ exports.handler = async (event) => {
         returnValue.body.put = "SUCCESS";
     })
     .catch((err) => {
-        console.log("FAIL W/ PUT");
+        console.log("FAIL W/ PUT", err);
         returnValue.body.put = "FAIL";
     });
     returnValue.body = JSON.stringify(returnValue.body);
     return returnValue;
-}
+};
