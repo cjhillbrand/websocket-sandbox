@@ -1,14 +1,15 @@
 var AWS = require('aws-sdk')
 AWS.config.update({region: 'us-east-1'})
 
-/**
- * There are two main goals of thie lambda function:
- * 1. Store the message in dynamoDB.
- * 2. Dispatch the message to every individual in the room.
- * 3. To accurately get the room we must first create join room...
- * (2 may be a little hard since we will have to use the API Gateway HTTPS
- * request)
- */
+/********************************************************\
+ * This is the SendMessage lambda. This lambda for the   *
+ * simple lab has one functionality:                     *
+ * 1. Send the message to every user.                    *
+ *                                                       *
+ * For the extended lab the functionality is different:  *
+ * 1. Send the messge to every user in the same room.    *
+ * 2. Store the message in a dynamoDB table.             *
+ \*******************************************************/
 exports.handler = async (event) => {
     const { value, room, name } = JSON.parse(event.body);    
     var db = new AWS.DynamoDB.DocumentClient();

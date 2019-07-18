@@ -1,7 +1,19 @@
 var AWS = require('aws-sdk')
 AWS.config.update({region: 'us-east-1'})
-// May have to figure out how to delete them from a room 
-// with no info on what room they are in
+
+ /******************************************************************************\
+ * This is the Disconnect Lambda function for the route $disonnect              *
+ * For the Simple Lab this lambda has one main functionality:                   *
+ * 1. Delete the connection ID from dynamoDB                                    *
+ *                                                                              *
+ * For the Extended Lab this lambda function has several functionalities        *
+ * including the one from the simple lab.                                       *
+ * 1. If the user that is disconnecting from the room is the last person.       *
+ *    we delete the room from dynamoDB                                          *
+ * 2. If the room is deleted we tell every other client that room is no longer  *
+ *    avaialable                                                                *
+ * 3. Else we just remove the user from the list of users in the room           *
+ \******************************************************************************/
 exports.handler = async (event) => {
     const db = new AWS.DynamoDB.DocumentClient();
     const { connectionId, domainName, stage } = event.requestContext;
@@ -25,9 +37,10 @@ exports.handler = async (event) => {
     .catch((err) => {
         returnVal.body.delete = "FAIL";
     });
-
     if (!room) return returnVal;
     
+    // This is the end of the Simple Lab code the rest is
+    // for the EXTENDED lab.
     params = {
         TableName: "room-messages-users",
         Key: {room: room},

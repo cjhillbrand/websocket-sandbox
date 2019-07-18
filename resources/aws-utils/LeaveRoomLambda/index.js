@@ -1,6 +1,17 @@
 var AWS = require('aws-sdk')
 AWS.config.update({region: 'us-east-1'})
 
+
+/*******************************************************************************\
+ * This is the LeaveRoom Lambda function for the route leave-room.              *
+ * For the Extended Lab this lambda function has several functionalities        *
+ * including the one from the simple lab.                                       *
+ * 1. If the user that is disconnecting from the room is the last person.       *
+ *    we delete the room from dynamoDB                                          *
+ * 2. If the room is deleted we tell every other client that room is no longer  *
+ *    avaialable                                                                *
+ * 3. Else we just remove the user from the list of users in the room           *
+ \******************************************************************************/
 exports.handler = async (event) => {
     const db = new AWS.DynamoDB.DocumentClient();
     const { connectionId, domainName, stage } = event.requestContext;

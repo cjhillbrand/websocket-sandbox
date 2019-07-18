@@ -2,13 +2,13 @@ var AWS = require('aws-sdk')
 AWS.config.update({region: 'us-east-1'})
 
 
-// The purpose of this lambda function is to be able
-// to let a user join a pre-existing chat room. 
-// This function will wrtie to dynamoDB the room
-// and connection ID to the id-room table
-
-// This lambda has to also return all of the messages in that
-// current room
+/******************************************************************\
+ * This is the Join Room Lambda. This lambda is used in the       *
+ * Extended lab. If you are doing the simple lab you can ignore   *
+ * this function. This lambda has several functionalities:        *
+ * 1. Update dynamoDB that a new user has joined a room           *
+ * 2. Retrieve and return all messages that are in that room.     *
+ \*****************************************************************/
 exports.handler = async (event) => {
     const db = new AWS.DynamoDB.DocumentClient();
     const { connectionId } = event.requestContext;

@@ -1,13 +1,14 @@
 var AWS = require('aws-sdk')
 AWS.config.update({region: 'us-east-1'})
 
-/**
- * This lambda function has the purpose of registering a user into
- * the chat room so they can be identifiable by 'humans' easier.
- * This lambda does talk to dynamoDB and does two operations on the DB.
- * 1. Write to the DB to update the client-records 'name'
- * 2. Read the table id-room db to retrieve any possible rooms.
- */
+/*******************************************************************\
+ * This is the Register User Lambda. This is for the extended lab   *
+ * if you are doing the simple lab you can ignore this file. This   *
+ * Function has several functionalities:                            *
+ * 1. Update the connection ID with the user name that was chosen   *
+ * 2. Return the list of rooms that are available for the user to   *
+ * choose from.                                                     *
+ \******************************************************************/
 exports.handler = async(event) => {
     const db = new AWS.DynamoDB.DocumentClient();
     const connectionId = event.requestContext.connectionId;

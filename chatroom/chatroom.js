@@ -2,15 +2,11 @@
  * The Class the defines the functions for talking to the
  * websocket. This class also offers utilties for formatting
  * the flow of the state of index.html
- * @class ChatRoom
- * @constructor
- * @connect
  */
 
 class ChatRoom {
     /**
      * Constructor for the Chatroom class
-     * @constructor
      */
     constructor() {
         this.state = {
@@ -25,8 +21,6 @@ class ChatRoom {
     /**
      * Connects to the websocket
      * listens for a successful connection
-     * @function
-     * @return {JSON Object} status of connection
      */
     connect() {
         try {
@@ -46,7 +40,6 @@ class ChatRoom {
      * Sets the state of the webpage back
      * to the starting state.
      * Connects back to the websocket
-     * @function
      */
     reconnect() {
         // Clear all of the input fields
@@ -85,7 +78,6 @@ class ChatRoom {
 
     /**
      * Sends the websocket a message. 
-     * @param {JSON Object} request 
      */
     sendWebsocketMessage(request) {
         console.log('attempting to: ', request.action);
@@ -102,13 +94,13 @@ class ChatRoom {
      * Sets the message listener for the websocket
      * Decides on what action to do depending on 
      * the type of message delivered back to the cliet.
-     * @function
      */
     setMessageListener() {
         const messageListener = function(e) {
             console.log(e);
             const data = JSON.parse(e.data);
             console.log(data.type);
+            // When a user gets a username
             if (data.type == _message_types.SIGNUP) {
                 data.rooms.map((elem) => {
                     appendList({
@@ -119,6 +111,7 @@ class ChatRoom {
                         value: elem,
                     });
                 });
+            // A new room has been created
             } else if (data.type == _message_types.ROOM && this.state.name) {
                 const elem = data.message;
                 let disabled = this.state.room === null ? 'enabled' : 'disabled';
@@ -130,6 +123,7 @@ class ChatRoom {
                         + elem + '</button>',
                     value: elem,
                 });
+            // A message has been sent
             } else if (data.type == _message_types.MESSAGE && 
                 (this.state.name && this.state.room || this.state.name == SIMPLE)) {
                 appendList({
@@ -137,6 +131,7 @@ class ChatRoom {
                     html: this.state.name == SIMPLE ? data.message : data.user + ' said: ' + data.message,
                     value: data.user + data.message,
                 });
+            // Callback from when the user creates their name
             } else if (data.type == _message_types.MULTI_MESSAGE) {
                 data.messages.map((elem) => {
                     appendList({
@@ -145,6 +140,7 @@ class ChatRoom {
                         value: data.user + data.message,
                     })
                 });
+            // A room has been removed
             } else if (data.type == _message_types.DELETE_ROOM) {
                 console.log("attempting to remove room");
                 let { room } = data; 
@@ -162,14 +158,12 @@ class ChatRoom {
     }
     /**
      * Updates the state of the Chatroom class.
-     * @param {JSON object}
      */
     update(param) {
         if (param.room) this.state.room = param.room;
         if (param.name) this.state.name = param.name;
         if (param.websocket) this.state.websocket = param.websocket;
         if (param.connected) this.state.connected = param.connected;
-        // add more updates as neccessary
     }
     /**
      * Sets the action to do when the

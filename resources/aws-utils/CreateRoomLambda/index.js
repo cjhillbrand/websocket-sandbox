@@ -1,13 +1,14 @@
 var AWS = require('aws-sdk')
 AWS.config.update({region: 'us-east-1'})
 
-/**
- * This is the create room lambda function.
- * This lambda has two main functionalities
- * 1. Write to dynamo that there is a new room available
- * 2. Tell all the other users that there is a new room available.
- * 
- */
+/*********************************************************************\
+ * This is the create room lambda function. This function is used for *
+ * the Extended lab, if you are doing the simple lab you can          *
+ * ignore this file.                                                  *
+ * This lambda has two main functionalities                           *
+ * 1. Write to dynamo that there is a new room available              *
+ * 2. Tell all the other users that there is a new room available.    *
+ \********************************************************************/
 
 exports.handler = async (event) => {
     console.log(' EVENT:',event);
@@ -35,8 +36,7 @@ exports.handler = async (event) => {
             }
         }]
     };
-    // We handle uniqueness on the client side. Not sure if 
-    // we should double check here for concurruncy issues...
+
     await db.transactWrite(transactWriteParam).promise()
     .then(() => {
         returnVal.body.transactWrite = "SUCCESS";

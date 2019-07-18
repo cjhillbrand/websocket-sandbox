@@ -2,8 +2,10 @@
 Welcome to the Websocket-Lab. The purpose of this lab is to introduce yourself to the AWS Websocket capability.
 Released on December 18, 2018, this service is still fairly new. The good news is, is that this service piggie
 backs off of the well established API Gateway. (To read more about the release please visit [here](https://aws.amazon.com/blogs/compute/announcing-websocket-apis-in-amazon-api-gateway/)). 
+<details>
+<summary> Please refer below for a short description of the services used in this lab: </summary>
+<br>
 
-Please refer below for a short description of the services used in this lab:
 * **IAM Roles and Policies**: AWS offers users the IAM service to users as a way to enhance security among the products that they use.
 The IAM roles and policies are used in this lab to help limit the amount of access some of our products can have to other products.
 To read more please visit: [here](https://aws.amazon.com/iam/).
@@ -19,6 +21,8 @@ a message is sent to the APIGatway that containts the action as "message" that r
 APIGateway websocket has three defualt routes: $connect, $disconnect, and $default. These routes are triggered when a socket is opened, closed, and have no other matching routes respectively.
 To read more please visit: [here](https://aws.amazon.com/api-gateway/)
 * On *the programming side*: We are using raw unadultarated javascript and html for the browser and User Interface. And for the lambda function we are using node.js version 10.
+
+</details>
 
 ## Pre-Requisites
 In order to complete this lab the following are required to have access to the following:
