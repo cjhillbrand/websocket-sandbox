@@ -55,10 +55,12 @@ Before we begin with tasks, it is recommended that you clone the GitHub Repo to 
 
 1. Visit the 
 <a href="https://console.aws.amazon.com/dynamodb/" target="_blank">DynamoDB console</a>
+
 2. Click on the **Create Table** button.
 3. At this stage:
     1. Enter **"client-records"** for table name.
     2. Enter **"ID"** for the primary key.
+    3. Leave the rest as the default.
     3. Press **create**
 4. This is going to start spinning up our table.
 
@@ -104,7 +106,27 @@ Each Lambda function has it's own source code, and accesses different services, 
 4. Click on the **+ Add inline policy** button located to the right and midway down the page. 
 5. Click on the **JSON** Tab. This is where we can add in our custom permissions to our role.
 6. Paste the policy (role.json) in each respective functions folder to the editor.
-7. Replace the \<ARN> with the ARN for the designated resource. 
+7. Replace the \<ARN> with the ARN for the designated resource.
+    <details>
+    <summary> Finding DynamoDB ARN </summary>
+    <br>
+
+    1. Go to the <a href="https://console.aws.amazon.com/dynamodb/" target="_blank">DynamoDB console</a>
+    2. Click on **Tables** and choose **client-records**
+    3. In the **Overview** section the very last Key will be the **Amazon Resource Name (ARN)**.
+
+    </details>
+    <details>
+    <summary> Finding API Gateway WebSocket ARN </summary>
+    <br>
+
+    1. Got to the <a href="https://console.aws.amazon.com/apigateway/home" target="_blank">API Gateway Console</a>
+    2. Click on your WebSocket.
+    3. Select any route.
+    4. Under the box labeled **Route Request** there will be an ARN, but it will only be **SPECIFIC TO THAT ROUTE**.
+    5. To make the ARN general enough copy and paste up until, but not including the route name.
+
+    </details>
 8. For the name put, **Custom-Inline-Policy** (since these are inline policies and only in the scope of each respective role there will not be any *naming* overlap)
 
 ## Task 3: Creating the WebSocket on API Gateway
@@ -122,7 +144,7 @@ Each Lambda function has it's own source code, and accesses different services, 
 
 ### Step 2: Creating a role for API Gateway
 1. Go to the IAM dashboard 
-<a href="https://console.aws.amazon.com/iam/home" target="_blank">here</a>
+<a href="https://console.aws.amazon.com/iam/home" target="_blank">here</a>.
 2. Click on **Roles** 
 3. Click on **Create Role** 
 4. Choose **API Gateway** as the resource and then scroll to the bottom and press next.
@@ -161,10 +183,10 @@ While still on the page thats titled *Provide information about the target backe
     3. Press **Deploy**
 3. Keep track of the **WebSocket URL** this is used in our local code.
 
-*Note: When adjusting permissions for the lambda we couldn't start adjusting for two of them until this step has been completed. Please go back to **Adjusting Permissions** for **Task 2**. The best way to copy the ARNs is to have an **IAM**, **API Gateway** and **DynamoDB** tab open so you can switch between the two copying and pasting ARNs.*
+*Note: When adjusting permissions for the lambda we couldn't start adjusting for one of them until this step has been completed. Please go back to **Adjusting Permissions** for **Task 2**. The best way to copy the ARNs is to have an **IAM**, **API Gateway** and **DynamoDB** tab open so you can switch between the two copying and pasting ARNs.*
 
 ## Task 4: Creating the GUI for the Chatroom
-*Note: This task is completed using a **Google Chrome Browser**, but feel free to use what you are comfortable with*
+*Note: This task is completed using a **Google Chrome Browser**, and the lab has only been tested using **Google Chrome** and Firefox** please be aware that some performance issues may arise if using other browsers than these.*
 ### Step 1: Configure Websocket on the UI
 1. On your local machine navigate to: websocket-sandbox/chatroom/aws-utils.js
 2. Under the **AWS_CONFIG** for the key **websocket** enter the Websocket URL we grabbed in the last task.

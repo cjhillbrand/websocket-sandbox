@@ -1,0 +1,10 @@
+Transform: 'AWS::Serverless-2016-10-31'
+Resources:
+
+  Connect: 
+    Type: 'AWS:Serverless:Function'
+    Properties: 
+      Runtime: node.js10.x
+      Handler: './aws-utils/ConnectionLambda/index.js'
+      Description: 'Lambda that initates the connection to the websocket'
+      
