@@ -1,32 +1,36 @@
 # Websocket-Lab
-Welcome to the Websocket-Lab. The purpose of this lab is to introduce yourself to the AWS Websocket capability.
-Released on December 18, 2018, this service is still fairly new. The good news is, is that this service piggie
-backs off of the well established API Gateway. (To read more about the release please visit [here](https://aws.amazon.com/blogs/compute/announcing-websocket-apis-in-amazon-api-gateway/)). 
+Welcome to the Websocket-Lab. The purpose of this lab is to introduce yourself to the AWS Websocket on Amazon API Gateway,
+released on December 18, 2018. (To read more about the release please visit
+<a href="https://aws.amazon.com/blogs/compute/announcing-websocket-apis-in-amazon-api-gateway/" target="blank">here.</a> 
 <details>
 <summary> Please refer below for a short description of the services used in this lab: </summary>
 <br>
 
-* **IAM Roles and Policies**: AWS offers users the IAM service to users as a way to enhance security among the products that they use.
+* **IAM Roles and Policies**: AWS offers users the AWS Identity and Access Management (IAM) service to users as a way to enhance security among the products that they use.
 The IAM roles and policies are used in this lab to help limit the amount of access some of our products can have to other products.
-To read more please visit: [here](https://aws.amazon.com/iam/).
-(Maybe we will also use this for IAM identity pools in cognito... who knows)
+To read more please visit:
+<a href="https://aws.amazon.com/iam/"target="_blank">here</a>.
+
 * **AWS Lambda**: The cornerstone product in AWS offerings of server-less products. This product is the backbone of our computing and business logic for our application. Lambda functions, are triggered by an event and when invoked execute a block of code. In this lab
 Lambda is used as a receiver for when we send messages to our Websocket, and then handle those messages accordingly. 
-To read more please visit: [here](https://aws.amazon.com/lambda/)
-* **AWS DynamoDB**: AWS' trademark NoSQL database. DynamoDB is used in this lab to keep track of session information as users interact with 
+To read more please visit: 
+<a href="https://aws.amazon.com/lambda/" target="_blank">here</a>.
+* **Amazon DynamoDB**: AWS' trademark NoSQL database. DynamoDB is used in this lab to keep track of session information as users interact with 
 the Chat room.
-To read more please visit: [here](https://aws.amazon.com/dynamodb/)
-* **AWS APIGateway**: APIGateway is used in this lab as the supplier of a websocket for our application. The APIGatway websocket configuration is setup as routes. Routes are pathways for messages to travel. For example if there is a route called "message" when
+To read more please visit: 
+<a href="https://aws.amazon.com/dynamodb/" target="_blank">here</a>.
+* **Amazon APIGateway**: APIGateway is used in this lab as the supplier of a websocket for our application. The APIGatway websocket configuration is setup as routes. Routes are pathways for messages to travel. For example if there is a route called "message" when
 a message is sent to the APIGatway that containts the action as "message" that route will be taken. It is important to note that 
 APIGateway websocket has three defualt routes: $connect, $disconnect, and $default. These routes are triggered when a socket is opened, closed, and have no other matching routes respectively.
-To read more please visit: [here](https://aws.amazon.com/api-gateway/)
+To read more please visit: 
+<a href="https://aws.amazon.com/api-gateway/" target="_blank">here</a>.
 * On *the programming side*: We are using raw unadultarated javascript and html for the browser and User Interface. And for the lambda function we are using node.js version 10.
 
 </details>
 
 ## Pre-Requisites
 In order to complete this lab you are required to have access to the following:
-* AWS IAM
+* IAM
 * DynamoDB
 * Lambda
 * API Gateway 
@@ -44,11 +48,13 @@ In this lab we are going to create 3 microservices. These microservices manage a
 
 There are three lambda Funtions for this lab to show that once orientated with the WebSocket API and the microservice pattern, you can then easily deploy new services with ease.
 
-Before we begin with tasks, it is recommended that you clone the GitHub Repo to your local machine located [here](https://github.com/cjhillbrand/websocket-sandbox).
+Before we begin with tasks, it is recommended that you clone the GitHub Repo to your local machine located 
+<a href="https://github.com/cjhillbrand/websocket-sandbox" target="_blank">here</a>.
 
 ## Task 1: Creating DynamoDB Tables
 
-1. Visit the [DynamoDB console](https://console.aws.amazon.com/dynamodb/).
+1. Visit the 
+<a href="https://console.aws.amazon.com/dynamodb/" target="_blank">DynamoDB console</a>
 2. Click on the **Create Table** button.
 3. At this stage:
     1. Enter **"client-records"** for table name.
@@ -59,17 +65,19 @@ Before we begin with tasks, it is recommended that you clone the GitHub Repo to 
 Wait until the table is created and that the table name and primary keys are correct. *Make sure to note **casing** for primary key*
 
 ## Task 2: Creating the Lambda functions
-Each Lambda function has it's own source code, and needs its own permissions assigned to its role. Refer to the table below for configurations.
+Each Lambda function has it's own source code, and accesses different services, which directly affects the roles and permissions assigned to it. Refer to the table below for configurations.
 
-| Function Name | Location of Source (Relative to /resources/aws-utils/) | Permissions        |
-|---------------|--------------------------------------------------------|--------------------|
-| Connect       | ConnectionLambda/index.js                              | DynamoDB           |
-| SendMessage   | DispatchLambda/index.js                                | DynamoDB WebSocket |
-| Disconnect    | DisconnectLambda/index.js                              | DynamoDB           |
+| Function Name | Location of Source                                                                         | Location of Role                                                                                  | Services Accessed  |
+|---------------|--------------------------------------------------------------------------------------------|------------------|--------------------|
+| Connect       | <a href="resources/aws-utils/ConnectionLambda/index.js" target="_blank">Link to Source</a> | <a href="resources/aws-utils/ConnectionLambda/role.js" target="_blank">Role Link </a>   | DynamoDB           |
+| SendMessage   | <a href="resources/aws-utils/DispatchLambda/index.js" target="_blank">Link to Source</a>   | <a href="resources/aws-utils/DispatchLambda/index.js" target="_blank">Link to Role</a>  | DynamoDB WebSocket |
+| Disconnect    | <a href="resources/aws-utils/DisconnectLambda/" target="_blank">Link to Source</a> | <a href="resources/aws-utils/DispatchLambda/role.js" target="_blank">Link to Role</a>             | DynamoDB           |
 
 ### Step 1: Creating the Lambda Functions and inputting code. 
 
-1. Navigate to the [Lambda Dashboard](https://console.aws.amazon.com/lambda/home)
+1. Navigate to the 
+<a href="https://console.aws.amazon.com/lambda/home" target="_blank">Lambda Dashboard</a>
+
 2. For each Lambda Function above:
     1. Click on the button **create a function** If the button is not visible, check on the console for a menu on the left, with the label *functions*, and then hit on the ***Create Function*** button.
     2. Select **Author From Scratch** 
@@ -102,7 +110,8 @@ Each Lambda function has it's own source code, and needs its own permissions ass
 ## Task 3: Creating the WebSocket on API Gateway
 
 ### Step 1: Create WebSocket
-1. Navigate to the API Gateway console [here](https://console.aws.amazon.com/apigateway/home).
+1. Navigate to the API Gateway console 
+<a href="https://console.aws.amazon.com/apigateway/home" target="_blank">here</a>.
 2. Depending on the state of your account you can find a **Create API** or **Get Started** Button. Click on the one that you see and you are going to be take a create API page.
     1. Press the **WebSocket** radio button for **Choose the Protocol**.
     2. For **API name** put, **chatroom-websocket**
@@ -112,7 +121,8 @@ Each Lambda function has it's own source code, and needs its own permissions ass
     5. Click **Create API**
 
 ### Step 2: Creating a role for API Gateway
-1. Go to the IAM dashboard [here](https://console.aws.amazon.com/iam/home).
+1. Go to the IAM dashboard 
+<a href="https://console.aws.amazon.com/iam/home" target="_blank">here</a>
 2. Click on **Roles** 
 3. Click on **Create Role** 
 4. Choose **API Gateway** as the resource and then scroll to the bottom and press next.
@@ -189,7 +199,7 @@ if everything up to this point has worked there should be one event logged in ou
         }
     }
     ```
-    *Note: the `e.statusCode == 410` what does the code 410 mean? I recommend looking at the documentation and doing a deeper dive and do some investigating! You can find the link to the documentation here.*
+    *Note: the `e.statusCode == 410` what does the code 410 mean? I recommend looking at the documentation and doing a deeper dive and do some investigating!*
 
 5. If this lab is being completed in conjunction with other individuals and you want to try and send messages to eachother all you have to do is change the awsconfig.js. Change it to:
 ```javascript
@@ -215,12 +225,12 @@ Follow the steps in the Simple lab for Task 1 and create another DynamoDB Table,
 2. Primary Key: **room**
 
 ## Task 2: Deploying **MORE** Lambda functions.
-| Function Name | Location of Source (Relative to /resources/aws-utils/) | Permissions        | Route      |
-|---------------|--------------------------------------------------------|--------------------|------------| 
-| RegisterUser  | RegisterUserLambda                                     | DynamoDB           | register   |
-| CreateRoom    | CreateRoomLambda/index.js                              | DynamoDB WebSocket | new-room   |
-| JoinRoom      | JoinRoomLambda/index.js                                | DynamoDB WebSocket | join-room  |
-| LeaveRoom     | LeaveRoomLambda/index.js                               | DynamoDB WebSocket | leave-room |
+| Function Name | Location of Source                                                                       | Location of Role |Permissions        | Route      |
+|---------------|------------------------------------------------------------------------------------------|------------------|--------------------|------------| 
+| RegisterUser  | <a href="resources/aws-utils/RegisterUserLambda/index.js" target="_blank">Source Link</a>| <a href="resources/aws-utils/RegisterUserLambda/role.js" target="_blank">Role Link</a> | DynamoDB           | register   |
+| CreateRoom    | <a href="resources/aws-utils/CreateRoomLambda/index.js" target="_blank">Source Link</a>  | <a href="resources/aws-utils/CreateRoomLambda/role.js" target="_blank">Role Link</a>   | DynamoDB WebSocket | new-room   |
+| JoinRoom      | <a href="resources/aws-utils/JoinRoomLambda/index.js" target="_blank">Source Link</a>    | <a href="resources/aws-utils/JoinRoomLambda/role.js" target="_blank">Role Link</a>     | DynamoDB WebSocket | join-room  |
+| LeaveRoom     | <a href="resources/aws-utils/LeaveRoomLambda/index.js" target="_blank">Source Link</a>   | <a href="resources/aws-utils/LeaveRoomLambda/role.js" target="_blank">Role Link</a>    | DynamoDB WebSocket | leave-room |
 
 ### Step 1: Create the new Lambda Functions
 For this task we are going to follow the same instructions as Task 2 in the Simple Lab, except just be sure to use the correct names, source code, and role.json when configuring. (Which is located under the directory listed above.)
@@ -274,7 +284,8 @@ That's it! Now your chatroom has full functional chatrooms and user names!
 
 **Q.** How can we federate who accesses the websocket? 
 
-**A.** Using a combination of Cognito and IAM Permissions/Groups we can federate who can access the websocket URL and we can actually give different access to different users! If we wanted one person to have access to send a message and another group not to, this can all be done with Cognito and IAM. Read more about Cognito [here](https://aws.amazon.com/cognito/).
+**A.** Using a combination of Cognito and IAM Permissions/Groups we can federate who can access the websocket URL and we can actually give different access to different users! If we wanted one person to have access to send a message and another group not to, this can all be done with Cognito and IAM. Read more about Cognito 
+<a href="https://aws.amazon.com/cognito/" target="_blank">here</a>.
 
 **Q.** I understand that I accessed my chatroom file on my local machine, but I want anyone on the internet to access it, how can I do this?
 
