@@ -38,7 +38,10 @@ exports.handler = async (event) => {
     .catch((err) => {
         returnVal.body.delete = "FAIL";
     });
-    if (!room) return returnVal;
+    if (!room) {
+        returnVal.body = JSON.stringify(returnVal.body);
+        return returnVal;
+    }
     
     // This is the end of the Simple Lab code the rest is
     // for the EXTENDED lab.

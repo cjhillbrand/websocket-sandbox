@@ -73,11 +73,11 @@ Wait until the table is created and that the table name and primary keys are cor
 ## Task 2: Creating the Lambda functions
 Each Lambda function has it's own source code, and accesses different services, which directly affects the roles and permissions assigned to it. Refer to the table below for configurations.
 
-| Function Name | Location of Source                                                                         | Location of Role                                                                                  | Services Accessed  |
+| Function Name | Location of Source                                                                         | Location of Role                                                                                              | Services Accessed  |
 |---------------|--------------------------------------------------------------------------------------------|------------------|--------------------|
 | `[Prefix]Connect`       | <a href="resources/aws-utils/ConnectionLambda/index.js" target="_blank">Link to Source</a> | <a href="resources/aws-utils/ConnectionLambda/role.js" target="_blank">Role Link </a>   | DynamoDB           |
 | `[Prefix]SendMessage`   | <a href="resources/aws-utils/DispatchLambda/index.js" target="_blank">Link to Source</a>   | <a href="resources/aws-utils/DispatchLambda/index.js" target="_blank">Link to Role</a>  | DynamoDB WebSocket |
-| `[Prefix]Disconnect`    | <a href="resources/aws-utils/DisconnectLambda/" target="_blank">Link to Source</a> | <a href="resources/aws-utils/DispatchLambda/role.js" target="_blank">Link to Role</a>             | DynamoDB           |
+| `[Prefix]Disconnect`    | <a href="resources/aws-utils/DisconnectLambda/index.js" target="_blank">Link to Source</a> | <a href="resources/aws-utils/DispatchLambda/role.js" target="_blank">Link to Role</a>   | DynamoDB           |
 
 ### Step 1: Creating the Lambda Functions and inputting code. 
 
@@ -132,6 +132,136 @@ Each Lambda function has it's own source code, and accesses different services, 
 
     </details>
 8. For the name put, **Custom-Inline-Policy** (since these are inline policies and only in the scope of each respective role there will not be any *naming* overlap)
+
+### Step 3: Testing your Lambda Functions
+Refer to each Drop Down to learn how to test each of the Lambda Functions.
+<details>
+<summary>Test Connect</summary>
+<br>
+
+1. Go to your Connect function dashboard.
+2. Click on **Test** in the top right hand corner.
+    1. For **Event Name** put, **MyConnectTest** 
+    2. For the JSON data, put:
+    ```json
+        {
+            "requestContext" : {
+                "domainName": "testName",
+                "stage": "testStage",
+                "connectionId": "testConnection"
+            }
+        }
+    ```
+    3. Press **Save**
+4. From the Lambda Dashboard, press **Test**.
+5. A Window should pop up at the top of the page. Lets inspect it:
+    1. The window should be green. If we expand the window we should see the result returned from our function.
+    2. The return object should look like this:
+    ```json
+        {
+            "isBase64Encoded": false,
+            "statusCode": 200,
+            "body": "{\"put\":\"SUCCESS\"}"
+        }
+    ```
+    3. Note the `"put": "SUCCESS"` this tells us that we were able to put an object to DynamoDB. If this does not say success, make sure all of the naming conventions, environment variables, and permissions are all correct.
+6. If there was a success we have to delete the test item we just placed from DynamoDB. (This also ensures that our lambda is working correctly.)
+7. Go to the DynamoDB dashboard. And click on your `[Prefix]client-records` table.
+8. Click on the tab **Items**.
+9. Select the test data that we just put in the table.
+10. Click **Actions** and then click **Delete**.
+
+We are done testing our **Connect** function
+</details> 
+
+<details>
+<summary>Test SendMessage</summary>
+<br>
+
+1. Go to your SendMessage function dashboard.
+2. Click on **Test** in the top right hand corner.
+    1. For **Event Name** put, **MyConnectTest** 
+    2. For the JSON data, put:
+    ```json
+        {
+            "requestContext": {
+                "stage": "testStage",
+                "domainName": "testDomain"
+            },
+            "body": "{\"value:\":\"testMessage\",\"room\":\"testRoom\",\"name\":\"no-rooms\"}"
+        }
+    ```
+    3. Press **Save**
+4. From the Lambda Dashboard, press **Test**.
+5. A Window should pop up at the top of the page. Lets inspect it:
+    1. The window should be green. If we expand the window we should see the result returned from our function.
+    2. The return object should look like this:
+    ```json
+        {
+            "statusCode": 200,
+            "body": "{\"scanStatus\":\"SUCCESS\"}"
+        }
+    ```
+    3. Note the `"scanStatus": "SUCCESS"` this tells us we were able to query our DynamoDB table. If we got `FAIL` for our `scanStatus` it is worth reviewing:
+    * Our Lambda function permissions and to make sure we have the correct ARN
+    * Our DynamoDB name and make sure that it was in fact created.
+    * Make sure that we set up our DynamioDB Environment variable correctly.
+6. Note that we didn't attempt to send any data to our connections. We can verify this with the line that says `INFO: []` This in our code is our array of connection IDs and since there are none there was no attempt. 
+*Note: We didn't put in any pseudo connectionIDs in our table for the purpose of attempting to send to an invalid connection.
+
+We are done testing our **SendMessage** function
+</details> 
+
+<details>
+<summary>Test Disconnect</summary>
+<br>
+
+1. Go to you DynamoDB table.
+    1. Go to the DynamoDB console.
+    2. Click **Tables** 
+    3. Click on your `[Prefix]client-records` table.
+2. Click **Create item**
+3. In the drop down menu in the top left corner of the window, click **Text**
+3. Change the JSON to: 
+```json
+{
+    "ID": "TestID"
+}
+```
+4. Click **Save** 
+5. Go to the Disconnect dashboard.
+    1. Go to the Lambda dashboard
+    2. Click on **Functions**
+    3. Click on `[Prefix]Disconnect`
+6. Click on **Test** 
+    1. For name enter, **MyDisconnectTest**
+    2. For the Json data enter: 
+    ```json
+    {
+        "requestContext": {
+            "connectionId": "TestID",
+            "domainName": "TestDomain",
+            "stage": "TestStage"
+        }
+    }
+    ```
+    3. Click on **Save**
+7. Click **Test** 
+8. Open the dropdown window. The result returned should look like this:
+    ```json
+    {
+        "statusCode": 200,
+        "body": "{\"delete\":\"SUCCESS\"}"
+    }
+    ```
+9. If you see `delete: fail`. Check the following:
+    * Make sure that your lambda function has the right permissions
+    * Make sure that you configured the correct environment variables.
+    * Make sure that you have the table in DynamoDB actually created
+
+Congratulations you are done testing the **Disconnect** function.
+</details> 
+
 
 ## Task 3: Creating the WebSocket on API Gateway
 
@@ -253,10 +383,10 @@ Follow the steps in the Simple lab for Task 1 and create another DynamoDB Table,
 ## Task 2: Deploying **MORE** Lambda functions.
 | Function Name | Location of Source                                                                       | Location of Role |Permissions        | Route      |
 |---------------|------------------------------------------------------------------------------------------|------------------|--------------------|------------| 
-| [Prefix]RegisterUser  | <a href="resources/aws-utils/RegisterUserLambda/index.js" target="_blank">Source Link</a>| <a href="resources/aws-utils/RegisterUserLambda/role.js" target="_blank">Role Link</a> | DynamoDB           | register   |
-| [Prefix]CreateRoom    | <a href="resources/aws-utils/CreateRoomLambda/index.js" target="_blank">Source Link</a>  | <a href="resources/aws-utils/CreateRoomLambda/role.js" target="_blank">Role Link</a>   | DynamoDB WebSocket | new-room   |
-| [Prefix]JoinRoom      | <a href="resources/aws-utils/JoinRoomLambda/index.js" target="_blank">Source Link</a>    | <a href="resources/aws-utils/JoinRoomLambda/role.js" target="_blank">Role Link</a>     | DynamoDB WebSocket | join-room  |
-| [Prefix]LeaveRoom     | <a href="resources/aws-utils/LeaveRoomLambda/index.js" target="_blank">Source Link</a>   | <a href="resources/aws-utils/LeaveRoomLambda/role.js" target="_blank">Role Link</a>    | DynamoDB WebSocket | leave-room |
+| `[Prefix]RegisterUser`  | <a href="resources/aws-utils/RegisterUserLambda/index.js" target="_blank">Source Link</a>| <a href="resources/aws-utils/RegisterUserLambda/role.js" target="_blank">Role Link</a> | DynamoDB           | `register`   |
+| `[Prefix]CreateRoom`    | <a href="resources/aws-utils/CreateRoomLambda/index.js" target="_blank">Source Link</a>  | <a href="resources/aws-utils/CreateRoomLambda/role.js" target="_blank">Role Link</a>   | DynamoDB WebSocket | `new-room`   |
+| `[Prefix]JoinRoom`      | <a href="resources/aws-utils/JoinRoomLambda/index.js" target="_blank">Source Link</a>    | <a href="resources/aws-utils/JoinRoomLambda/role.js" target="_blank">Role Link</a>     | DynamoDB WebSocket | `join-room`  |
+| `[Prefix]LeaveRoom`     | <a href="resources/aws-utils/LeaveRoomLambda/index.js" target="_blank">Source Link</a>   | <a href="resources/aws-utils/LeaveRoomLambda/role.js" target="_blank">Role Link</a>    | DynamoDB WebSocket | `leave-room` |
 
 ### Step 1: Create the new Lambda Functions
 For this task we are going to follow the same instructions as Task 2 in the Simple Lab, except just be sure to use the correct names, source code, and role.json when configuring. (Which is located under the directory listed above.)
