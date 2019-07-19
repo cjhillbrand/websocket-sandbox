@@ -11,11 +11,11 @@ read number
 case $number in
     1)
         path="ConnectionLambda/"
-        func="onConnectionFunction"
+        func="Connect"
         ;;
     2)
         path="RegisterUserLambda/"
-        func="registerUser"
+        func="RegisterUser"
         ;;
     3) 
         path="JoinRoomLambda"
@@ -23,11 +23,11 @@ case $number in
         ;;
     4)
         path="DispatchLambda"
-        func="dispatchMessage"
+        func="SendMessge"
         ;;
     5)
         path="DisconnectLambda"
-        func="testDisconnect"
+        func="Disconnect"
         ;;
     6)
         path="CreateRoomLambda"

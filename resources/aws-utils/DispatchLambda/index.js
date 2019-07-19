@@ -12,6 +12,7 @@ AWS.config.update({region: 'us-east-1'});
  \*******************************************************/
 exports.handler = async (event) => {
     const { value, room, name } = JSON.parse(event.body);    
+    const { TABLE_CR } = process.env;
     var db = new AWS.DynamoDB.DocumentClient();
     const time = new Date();
     var returnVal = {
@@ -32,7 +33,7 @@ exports.handler = async (event) => {
 
     if (name == "no-rooms") {
         let connectionData
-        await db.scan({TableName: "client-records"}).promise()
+        await db.scan({TableName: TABLE_CR}).promise()
         .then((data) => {
             returnVal.body.scanStatus = "SUCCESS";
             connectionData = data.Items.map((elem) => {return elem.ID});
@@ -43,7 +44,7 @@ exports.handler = async (event) => {
                 await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise();
             } catch (e) {
                 if (e.statusCode == 410) {
-                    await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
+                    await db.delete({TableName: TABLE_CR, Key: { ID: connectionId }}).promise();
                 }
             }
         }
@@ -51,8 +52,9 @@ exports.handler = async (event) => {
         return returnVal;
     }
 
+    const { TABLE_RMU } = process.env;
     const scanParams = {
-        TableName : "room-messages-users",
+        TableName : TABLE_RMU,
         ExpressionAttributeValues: {":r": room},
         FilterExpression: "room = :r",
         ProjectionExpression: "#users",
@@ -82,7 +84,7 @@ exports.handler = async (event) => {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionId}`);
                 const updateParams = {
-                    TableName: "room-messages-users", 
+                    TableName: TABLE_RMU, 
                     Key: { room: room },
                     UpdateExpression: 'REMOVE #users[' + count + ']',
                     ExpressionAttributeNames: {
@@ -96,7 +98,7 @@ exports.handler = async (event) => {
                 .catch((err) => {
                     console.log("ERROR during deleting old connection", err);
                 });
-                await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
+                await db.delete({TableName: TABLE_CR, Key: { ID: connectionId }}).promise();
                 count--;
             } else {
                 returnVal.body.dispatchStatus = "FAIL";
@@ -108,7 +110,7 @@ exports.handler = async (event) => {
 
     returnVal.body.dispatchStatus = "SUCCESS";
     await db.update({
-        TableName: "room-messages-users",
+        TableName: TABLE_RMU,
         Key: {room: room},
         ExpressionAttributeNames: {
             '#messages': 'messages'

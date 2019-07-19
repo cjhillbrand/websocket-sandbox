@@ -14,6 +14,7 @@ exports.handler = async (event) => {
     console.log(' EVENT:',event);
     const { value } = JSON.parse(event.body);
     const { connectionId } = event.requestContext;
+    const { TABLE_CR, TABLE_RMU } = process.env;
     const db = new AWS.DynamoDB.DocumentClient();
     var returnVal = {
         statusCode: 200,
@@ -23,12 +24,12 @@ exports.handler = async (event) => {
     const transactWriteParam = {
         TransactItems: [{
             Put: {
-                TableName: 'room-messages-users',
+                TableName: TABLE_RMU,
                 Item: {'room': value, users: [connectionId]}
             }
         }, {
             Update: {
-                TableName: 'client-records',
+                TableName: TABLE_CR,
                 Key: { ID: connectionId },
                 UpdateExpression: "set #R = :room",
                 ExpressionAttributeNames: {"#R": "room"},
@@ -48,7 +49,7 @@ exports.handler = async (event) => {
     
     let connectionData;
     let scanParams = {
-        TableName : "client-records"
+        TableName : TABLE_CR
     };
 
     await db.scan(scanParams).promise()
@@ -82,7 +83,7 @@ exports.handler = async (event) => {
         } catch (e) {
             if (e.statusCode === 410) {
                 console.log(`Found stale connection, deleting ${connectionId}`);
-                await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
+                await db.delete({TableName: "TABLE_CR", Key: { ID: connectionId }}).promise();
             } else {
                 returnVal.body.dispatchStatus = "FAIL";
                 throw e;

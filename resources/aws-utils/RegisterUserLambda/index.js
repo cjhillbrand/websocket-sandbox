@@ -13,6 +13,7 @@ exports.handler = async(event) => {
     const db = new AWS.DynamoDB.DocumentClient();
     const connectionId = event.requestContext.connectionId;
     const username = JSON.parse(event.body).value;
+    const { TABLE_CR, TABLE_RMU } = process.env;
     var returnVal = {
         statusCode: 200,
         body: {
@@ -20,7 +21,7 @@ exports.handler = async(event) => {
         }
     };
     const updateParams = {
-        TableName: "client-records",
+        TableName: TABLE_CR,
         Key: {ID: connectionId},
         UpdateExpression: "set #N = :name",
         ExpressionAttributeNames: {"#N": "name"},
@@ -36,7 +37,7 @@ exports.handler = async(event) => {
     });
 
     const readParams = {
-        TableName: "room-messages-users",
+        TableName: TABLE_RMU,
         AttributesToGet: ['room']
     };
 

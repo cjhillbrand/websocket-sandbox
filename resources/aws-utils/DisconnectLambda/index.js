@@ -17,9 +17,10 @@ AWS.config.update({region: 'us-east-1'});
 exports.handler = async (event) => {
     const db = new AWS.DynamoDB.DocumentClient();
     const { connectionId, domainName, stage } = event.requestContext;
+    const { TABLE_CR } = process.env;
     console.log(event);
     var params = {
-        TableName: "client-records",
+        TableName: TABLE_CR,
         Key: {"ID": connectionId},
         ReturnValues: 'ALL_OLD'
     };
@@ -41,8 +42,9 @@ exports.handler = async (event) => {
     
     // This is the end of the Simple Lab code the rest is
     // for the EXTENDED lab.
+    const { TABLE_RMU } = process.env;
     params = {
-        TableName: "room-messages-users",
+        TableName: TABLE_RMU,
         Key: {room: room},
         AttributesToGet: ['users']
     };
@@ -65,7 +67,7 @@ exports.handler = async (event) => {
     if (connections.length == 1) {
         // Delete the room from dynamo
         await db.delete({
-            TableName: "room-messages-users",
+            TableName: TABLE_RMU,
             Key: {room: room}
         }).promise()
         .then(() => {
@@ -78,7 +80,7 @@ exports.handler = async (event) => {
         // Get everyone else we need to notify that the room has
         // been deleted
         await db.scan({
-            TableName: "client-records",
+            TableName: TABLE_CR,
         }).promise()
         .then((data) => {
             returnVal.body.scanStatus = "SUCCESS";
@@ -108,7 +110,7 @@ exports.handler = async (event) => {
             } catch (e) {
                 if (e.statusCode === 410) {
                     console.log(`Found stale connection, deleting ${connectionId}`);
-                    await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
+                    await db.delete({TableName: TABLE_CR, Key: { ID: connectionId }}).promise();
                 } else {
                     console.log("DISPATCH TO CONNECTION FAIL", e);
                 }
@@ -119,7 +121,7 @@ exports.handler = async (event) => {
         // So we just need to remove that connectionID
         // from that room.
         const removeParams = {
-            TableName: "room-messages-users",
+            TableName: TABLE_RMU,
             Key: {room: room},
             UpdateExpression: 'REMOVE #users[' + connections.indexOf(connectionId) + ']',
             ExpressionAttributeNames: {

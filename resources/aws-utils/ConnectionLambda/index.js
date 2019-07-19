@@ -11,8 +11,9 @@ AWS.config.update({region: 'us-east-1'});
 exports.handler = async (event) => {
     const db = new AWS.DynamoDB.DocumentClient();
     const { domainName, stage, connectionId } = event.requestContext;
+    const { TABLE_CR } = process.env;
     var params = {
-        TableName: 'client-records',
+        TableName: TABLE_CR,
         Item: {
             ID: connectionId,
             domain: domainName,

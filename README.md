@@ -48,8 +48,12 @@ In this lab we are going to create 3 microservices. These microservices manage a
 
 There are three lambda Funtions for this lab to show that once orientated with the WebSocket API and the microservice pattern, you can then easily deploy new services with ease.
 
-Before we begin with tasks, it is recommended that you clone the GitHub Repo to your local machine located 
+Before we begin with tasks:
+* It is recommended that you clone the GitHub Repo to your local machine located 
 <a href="https://github.com/cjhillbrand/websocket-sandbox" target="_blank">here</a>.
+* Note that from this point forward any and all resources will be reference as *[Prefix][Resource]* 
+    * Prefix: We include this prefix so incase there are multiple people working on one account there won't be any collisions. This will be a unique string of characters that you choose. 
+    * Resource: This is the given resource name that the documentation gives it.
 
 ## Task 1: Creating DynamoDB Tables
 
@@ -58,7 +62,7 @@ Before we begin with tasks, it is recommended that you clone the GitHub Repo to 
 
 2. Click on the **Create Table** button.
 3. At this stage:
-    1. Enter **"client-records"** for table name.
+    1. Enter `[Prefix]client-records` for table name.
     2. Enter **"ID"** for the primary key.
     3. Leave the rest as the default.
     3. Press **create**
@@ -71,9 +75,9 @@ Each Lambda function has it's own source code, and accesses different services, 
 
 | Function Name | Location of Source                                                                         | Location of Role                                                                                  | Services Accessed  |
 |---------------|--------------------------------------------------------------------------------------------|------------------|--------------------|
-| Connect       | <a href="resources/aws-utils/ConnectionLambda/index.js" target="_blank">Link to Source</a> | <a href="resources/aws-utils/ConnectionLambda/role.js" target="_blank">Role Link </a>   | DynamoDB           |
-| SendMessage   | <a href="resources/aws-utils/DispatchLambda/index.js" target="_blank">Link to Source</a>   | <a href="resources/aws-utils/DispatchLambda/index.js" target="_blank">Link to Role</a>  | DynamoDB WebSocket |
-| Disconnect    | <a href="resources/aws-utils/DisconnectLambda/" target="_blank">Link to Source</a> | <a href="resources/aws-utils/DispatchLambda/role.js" target="_blank">Link to Role</a>             | DynamoDB           |
+| `[Prefix]Connect`       | <a href="resources/aws-utils/ConnectionLambda/index.js" target="_blank">Link to Source</a> | <a href="resources/aws-utils/ConnectionLambda/role.js" target="_blank">Role Link </a>   | DynamoDB           |
+| `[Prefix]SendMessage`   | <a href="resources/aws-utils/DispatchLambda/index.js" target="_blank">Link to Source</a>   | <a href="resources/aws-utils/DispatchLambda/index.js" target="_blank">Link to Role</a>  | DynamoDB WebSocket |
+| `[Prefix]Disconnect`    | <a href="resources/aws-utils/DisconnectLambda/" target="_blank">Link to Source</a> | <a href="resources/aws-utils/DispatchLambda/role.js" target="_blank">Link to Role</a>             | DynamoDB           |
 
 ### Step 1: Creating the Lambda Functions and inputting code. 
 
@@ -89,7 +93,7 @@ Each Lambda function has it's own source code, and accesses different services, 
         3. For **Permissions**, we need to give the lambda function the required permissions we have listed above.
             * Click on **Choose or create an execution role**. This unfolds a section where we can trigger the creation of the role for our lambda function.
             * For execution Role, select **Create new role from AWS policy templates**. This will expand two fields below the section: 
-                * For the **Role Name** input the *function-name* + Role, so for example the **Connect** function's role would be **ConnectRole**. 
+                * For the **Role Name** input the `[Prefix] + function-name + Role`, so for example the **Connect** function's role would be **[Prefix]ConnectRole**. 
                 * Do not select anything for the **Policy template** field.
     4. Click the **Create Function** button on the bottom of the right hand side of the page. You should now be taken to the dashboard of that lambda function.
     5. Scroll down to where you see the function code. It looks like a code editor and should have one open tab with the file *index.js* 
@@ -112,7 +116,7 @@ Each Lambda function has it's own source code, and accesses different services, 
     <br>
 
     1. Go to the <a href="https://console.aws.amazon.com/dynamodb/" target="_blank">DynamoDB console</a>
-    2. Click on **Tables** and choose **client-records**
+    2. Click on **Tables** and choose **[Prefix]client-records**
     3. In the **Overview** section the very last Key will be the **Amazon Resource Name (ARN)**.
 
     </details>
@@ -136,7 +140,7 @@ Each Lambda function has it's own source code, and accesses different services, 
 <a href="https://console.aws.amazon.com/apigateway/home" target="_blank">here</a>.
 2. Depending on the state of your account you can find a **Create API** or **Get Started** Button. Click on the one that you see and you are going to be take a create API page.
     1. Press the **WebSocket** radio button for **Choose the Protocol**.
-    2. For **API name** put, **chatroom-websocket**
+    2. For **API name** put, `[Prefix]chatroom-websocket`
     3. For **Route Selection Expression** enter `$request.body.action` 
        *Note: If you want to learn more about routes and what they do click on the **Learn More** button next to the input box*
     4. For Description enter, **WebSocket for a Chatroom web page**.
@@ -149,7 +153,7 @@ Each Lambda function has it's own source code, and accesses different services, 
 3. Click on **Create Role** 
 4. Choose **API Gateway** as the resource and then scroll to the bottom and press next.
 5. Click on **Next: Tags** and then **Next: Review**
-6. For role name enter, **WebSocketAPIRole**, then click **Create**
+6. For role name enter, `[PrefixWebSocketAPIRole`, then click **Create**
 7. Confirm the Role was made by clicking on it.
 8. Now we need to add an line policy so our WebSocket can invoke lambda functions
     1. Go to the repository and find the directory websocket-sandbox/resources/APIGateway
@@ -243,16 +247,16 @@ The purpose of this extended portion is:
 
 ## Task 1: Create **ANOTHER** DynamoDB Table
 Follow the steps in the Simple lab for Task 1 and create another DynamoDB Table, but change the following:
-1. Table Name: **room-messages-users**
+1. Table Name: `[Prefix]room-messages-users`
 2. Primary Key: **room**
 
 ## Task 2: Deploying **MORE** Lambda functions.
 | Function Name | Location of Source                                                                       | Location of Role |Permissions        | Route      |
 |---------------|------------------------------------------------------------------------------------------|------------------|--------------------|------------| 
-| RegisterUser  | <a href="resources/aws-utils/RegisterUserLambda/index.js" target="_blank">Source Link</a>| <a href="resources/aws-utils/RegisterUserLambda/role.js" target="_blank">Role Link</a> | DynamoDB           | register   |
-| CreateRoom    | <a href="resources/aws-utils/CreateRoomLambda/index.js" target="_blank">Source Link</a>  | <a href="resources/aws-utils/CreateRoomLambda/role.js" target="_blank">Role Link</a>   | DynamoDB WebSocket | new-room   |
-| JoinRoom      | <a href="resources/aws-utils/JoinRoomLambda/index.js" target="_blank">Source Link</a>    | <a href="resources/aws-utils/JoinRoomLambda/role.js" target="_blank">Role Link</a>     | DynamoDB WebSocket | join-room  |
-| LeaveRoom     | <a href="resources/aws-utils/LeaveRoomLambda/index.js" target="_blank">Source Link</a>   | <a href="resources/aws-utils/LeaveRoomLambda/role.js" target="_blank">Role Link</a>    | DynamoDB WebSocket | leave-room |
+| [Prefix]RegisterUser  | <a href="resources/aws-utils/RegisterUserLambda/index.js" target="_blank">Source Link</a>| <a href="resources/aws-utils/RegisterUserLambda/role.js" target="_blank">Role Link</a> | DynamoDB           | register   |
+| [Prefix]CreateRoom    | <a href="resources/aws-utils/CreateRoomLambda/index.js" target="_blank">Source Link</a>  | <a href="resources/aws-utils/CreateRoomLambda/role.js" target="_blank">Role Link</a>   | DynamoDB WebSocket | new-room   |
+| [Prefix]JoinRoom      | <a href="resources/aws-utils/JoinRoomLambda/index.js" target="_blank">Source Link</a>    | <a href="resources/aws-utils/JoinRoomLambda/role.js" target="_blank">Role Link</a>     | DynamoDB WebSocket | join-room  |
+| [Prefix]LeaveRoom     | <a href="resources/aws-utils/LeaveRoomLambda/index.js" target="_blank">Source Link</a>   | <a href="resources/aws-utils/LeaveRoomLambda/role.js" target="_blank">Role Link</a>    | DynamoDB WebSocket | leave-room |
 
 ### Step 1: Create the new Lambda Functions
 For this task we are going to follow the same instructions as Task 2 in the Simple Lab, except just be sure to use the correct names, source code, and role.json when configuring. (Which is located under the directory listed above.)

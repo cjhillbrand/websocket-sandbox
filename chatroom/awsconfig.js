@@ -1,6 +1,6 @@
 const AWS_CONFIG = {
     "region": "us-east-1",
-    "websocket": "Your Websocket URL",
+    "websocket": "wss://9p0blqf20h.execute-api.us-east-1.amazonaws.com/development",
     "name": "Websocket-Lab",
 }
 

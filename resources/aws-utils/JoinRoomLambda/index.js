@@ -13,11 +13,11 @@ exports.handler = async (event) => {
     const db = new AWS.DynamoDB.DocumentClient();
     const { connectionId } = event.requestContext;
     const room = JSON.parse(event.body).value;
-
+    const { TABLE_CR, TABLE_RMU } = process.env;
     const transactWriteParams = {
         TransactItems: [{
             Update: {
-                TableName: "room-messages-users",
+                TableName: TABLE_RMU,
                 Key: {room: room},
                 ExpressionAttributeNames: {
                     '#users': 'users'
@@ -30,7 +30,7 @@ exports.handler = async (event) => {
             }
         }, {
             Update: {
-                TableName: 'client-records',
+                TableName: TABLE_CR,
                 Key: { ID: connectionId },
                 UpdateExpression: "set #R = :room",
                 ExpressionAttributeNames: {"#R": "room"},
@@ -54,7 +54,7 @@ exports.handler = async (event) => {
     });
 
     const scanParams = {
-        TableName: "room-messages-users",
+        TableName: TABLE_RMU,
         FilterExpression: "room = :this_room",
         ExpressionAttributeValues: {":this_room": room}
     };
