@@ -25,7 +25,7 @@ Resources:
     Properties: 
       Runtime: nodejs10.x
       Handler: index.handler
-      CodeUri: 's3://websocket-sandbox-code/resources/aws-utils/ConnectionLambda/index.zip'
+      CodeUri: './aws-utils/ConnectionLambda/index.js'
       Policies: 
         - Version: '2012-10-17'
           Statement:
@@ -42,7 +42,7 @@ Resources:
     Properties:
       Runtime: nodejs10.x
       Handler: index.handler
-      CodeUri: 's3://websocket-sandbox-code/resources/aws-utils/DisconnectLambda/index.zip'
+      CodeUri: './aws-utils/DisconnectLambda/index.js'
       Policies: 
         - Version: '2012-10-17'
           Statement:
@@ -59,7 +59,7 @@ Resources:
     Properties:
       Runtime: nodejs10.x
       Handler: index.handler
-      CodeUri: 's3://websocket-sandbox-code/resources/aws-utils/DispatchLambda/index.zip'
+      CodeUri: './aws-utils/DispatchLambda'
       Policies: 
         - AmazonAPIGatewayInvokeFullAccess
         - AmazonAPIGatewayAdministrator
