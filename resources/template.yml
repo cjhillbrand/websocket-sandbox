@@ -1,0 +1,205 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: 'A Chatroom'
+Resources:
+
+  clientRecords:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: ID
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  chatroomWebsocket:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: chatroom-websocket
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: "$request.body.action"
+
+  Connect: 
+    Type: AWS::Serverless::Function
+    Properties: 
+      Runtime: nodejs10.x
+      Handler: index.handler
+      CodeUri: 's3://websocket-sandbox-code/resources/aws-utils/ConnectionLambda/index.zip'
+      Policies: 
+        - Version: '2012-10-17'
+          Statement:
+            Effect: Allow
+            Action: 
+              - dynamodb:PutItem
+            Resource: !GetAtt clientRecords.Arn
+      Environment:
+        Variables:
+          TABLE_CR: !Ref clientRecords
+
+  Disconnect:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs10.x
+      Handler: index.handler
+      CodeUri: 's3://websocket-sandbox-code/resources/aws-utils/DisconnectLambda/index.zip'
+      Policies: 
+        - Version: '2012-10-17'
+          Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:DeleteItem
+            Resource: !GetAtt clientRecords.Arn
+      Environment:
+        Variables:
+          TABLE_CR: !Ref clientRecords
+
+  Dispatch:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs10.x
+      Handler: index.handler
+      CodeUri: 's3://websocket-sandbox-code/resources/aws-utils/DispatchLambda/index.zip'
+      Policies: 
+        - AmazonAPIGatewayInvokeFullAccess
+        - AmazonAPIGatewayAdministrator
+        # - Version: '2012-10-17'
+        #   Statement:
+        #     Effect: Allow
+        #     Action:
+        #       - execute-api:Invoke
+        #       - execute-api:ManageConnections
+        #     Resource: arn:aws:execute-api:${AWS::region}:${AWS::AccountId}:${api-id}/${stage-name}/*
+        - Version: '2012-10-17' 
+          Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:DeleteItem
+              - dynamodb:Scan
+              - dynamodb:UpdateItem
+            Resource: !GetAtt clientRecords.Arn
+      Environment:
+        Variables:
+          TABLE_CR: !Ref clientRecords
+  
+  ConnectLambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref chatroomWebsocket
+      Description: connect integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Connect.Arn}/invocations
+
+  DispatchLambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref chatroomWebsocket
+      Description: dispatch integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Dispatch.Arn}/invocations
+
+  DisconnectLambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref chatroomWebsocket
+      Description: disconnect integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Disconnect.Arn}/invocations
+
+
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    DependsOn: 
+      - Connect
+    Properties: 
+      ApiId: !Ref chatroomWebsocket
+      RouteKey: "$connect"
+      AuthorizationType: NONE
+      OperationName: ConnectRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref ConnectLambdaIntegration
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    DependsOn: 
+      - Disconnect
+    Properties:
+      ApiId: !Ref chatroomWebsocket
+      RouteKey: "$disconnect"
+      AuthorizationType: NONE
+      OperationName: DisconnectRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref DisconnectLambdaIntegration
+  DispatchRoute:
+    Type: AWS::ApiGatewayV2::Route
+    DependsOn:
+      - Dispatch
+    Properties:
+      ApiId: !Ref chatroomWebsocket
+      RouteKey: "dispatch"
+      AuthorizationType: NONE
+      OperationName: DispatchRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref DispatchLambdaIntegration
+
+  Deployment: 
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ConnectRoute
+      - DisconnectRoute
+      - DispatchRoute
+      - ConnectLambdaIntegration
+      - DispatchLambdaIntegration
+      - DisconnectLambdaIntegration
+    Properties:
+      ApiId: !Ref chatroomWebsocket
+  
+  Stage: 
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: development
+      Description: development stage
+      DeploymentId: !Ref Deployment
+      ApiId: !Ref chatroomWebsocket
+
+
+  WebSocketConnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - chatroomWebsocket
+      - Connect
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref Connect
+      Principal: apigateway.amazonaws.com
+
+  WebSocketDispatchPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - chatroomWebsocket
+      - Dispatch
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref Dispatch
+      Principal: apigateway.amazonaws.com
+
+  WebSocketDisconnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - chatroomWebsocket
+      - Disconnect
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref Disconnect
+      Principal: apigateway.amazonaws.com
