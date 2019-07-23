@@ -468,6 +468,10 @@ That's it! Now your chatroom has full functional chatrooms and user names!
 
 10. Open index.html in your browser.
 
+##Cleaning up SAM CLI
+Run the command:
+    `aws cloudformation delete-stack --stack-name <Your Stack Name>`
+
 # Looking to the Future
 
 **Q.** How can we federate who accesses the websocket? 
