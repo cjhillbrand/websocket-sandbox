@@ -13,7 +13,7 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
 
-  chatroomWebsocket:
+  ChatroomWebsocket:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: chatroom-websocket
@@ -61,15 +61,13 @@ Resources:
       Handler: index.handler
       CodeUri: './aws-utils/DispatchLambda'
       Policies: 
-        - AmazonAPIGatewayInvokeFullAccess
-        - AmazonAPIGatewayAdministrator
-        # - Version: '2012-10-17'
-        #   Statement:
-        #     Effect: Allow
-        #     Action:
-        #       - execute-api:Invoke
-        #       - execute-api:ManageConnections
-        #     Resource: arn:aws:execute-api:${AWS::region}:${AWS::AccountId}:${api-id}/${stage-name}/*
+        - Version: '2012-10-17'
+          Statement:
+            Effect: Allow
+            Action:
+              - execute-api:Invoke
+              - execute-api:ManageConnections
+            Resource: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ChatroomWebsocket}/*'
         - Version: '2012-10-17' 
           Statement:
             Effect: Allow
@@ -85,7 +83,7 @@ Resources:
   ConnectLambdaIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref chatroomWebsocket
+      ApiId: !Ref ChatroomWebsocket
       Description: connect integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -95,7 +93,7 @@ Resources:
   DispatchLambdaIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref chatroomWebsocket
+      ApiId: !Ref ChatroomWebsocket
       Description: dispatch integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -105,7 +103,7 @@ Resources:
   DisconnectLambdaIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref chatroomWebsocket
+      ApiId: !Ref ChatroomWebsocket
       Description: disconnect integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -118,7 +116,7 @@ Resources:
     DependsOn: 
       - Connect
     Properties: 
-      ApiId: !Ref chatroomWebsocket
+      ApiId: !Ref ChatroomWebsocket
       RouteKey: "$connect"
       AuthorizationType: NONE
       OperationName: ConnectRoute
@@ -131,7 +129,7 @@ Resources:
     DependsOn: 
       - Disconnect
     Properties:
-      ApiId: !Ref chatroomWebsocket
+      ApiId: !Ref ChatroomWebsocket
       RouteKey: "$disconnect"
       AuthorizationType: NONE
       OperationName: DisconnectRoute
@@ -144,7 +142,7 @@ Resources:
     DependsOn:
       - Dispatch
     Properties:
-      ApiId: !Ref chatroomWebsocket
+      ApiId: !Ref ChatroomWebsocket
       RouteKey: "dispatch"
       AuthorizationType: NONE
       OperationName: DispatchRoute
@@ -163,7 +161,7 @@ Resources:
       - DispatchLambdaIntegration
       - DisconnectLambdaIntegration
     Properties:
-      ApiId: !Ref chatroomWebsocket
+      ApiId: !Ref ChatroomWebsocket
   
   Stage: 
     Type: AWS::ApiGatewayV2::Stage
@@ -171,13 +169,13 @@ Resources:
       StageName: development
       Description: development stage
       DeploymentId: !Ref Deployment
-      ApiId: !Ref chatroomWebsocket
+      ApiId: !Ref ChatroomWebsocket
 
 
   WebSocketConnectPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - chatroomWebsocket
+      - ChatroomWebsocket
       - Connect
     Properties: 
       Action: lambda:InvokeFunction
@@ -187,7 +185,7 @@ Resources:
   WebSocketDispatchPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - chatroomWebsocket
+      - ChatroomWebsocket
       - Dispatch
     Properties: 
       Action: lambda:InvokeFunction
@@ -197,9 +195,14 @@ Resources:
   WebSocketDisconnectPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - chatroomWebsocket
+      - ChatroomWebsocket
       - Disconnect
     Properties: 
       Action: lambda:InvokeFunction
       FunctionName: !Ref Disconnect
       Principal: apigateway.amazonaws.com
+
+Outputs:
+  WebsocketURL:
+    Description: "URL for the newly deployed websocket"
+    Value: !Join [ '', [ 'wss://', !Ref ChatroomWebsocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]

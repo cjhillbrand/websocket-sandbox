@@ -437,7 +437,8 @@ That's it! Now your chatroom has full functional chatrooms and user names!
 4. Delete all tables from DynamoDB.
 
 # Deploying with SAM CLI
-1. Make sure you hvae the aws sam cli downloaded
+*Note: The below instructions only deploy the **Simple** stack, comparable to the infrastructure set up in the **Simple Lab**. If you want to deploy the full stack replace the file **template-simple.yml** to **template-full.yml** in **Step 4***
+1. Make sure you have the aws sam cli downloaded
 2. Navigate, in your terminal to the directory 
 
     `websocket-sandbox/resources/`
@@ -448,14 +449,24 @@ That's it! Now your chatroom has full functional chatrooms and user names!
 
 4. Run the following commmand:
     
-    `sam package --output-template-file packaged.yaml --s3-bucket <bucketName>`
+    `sam package --template-file template-simple.yml --output-template-file packaged.yaml --s3-bucket <bucketName>`
 
 *Note: Make sure the bucket names in the above two commands are the exact same*
 
 5. Finally run:
     
-    `aws cloudformation deploy --template-file ./packaged.yaml --stack-name <custom stack name>`
+    `aws cloudformation deploy --template-file ./packaged.yaml --stack-name <custom stack name>  --capabilities CAPABILITY_IAM`
 
+6. Navigate to the CloudFormation dashboard 
+<a href="https://console.aws.amazon.com/cloudformation" target="_blank">here.</a> 
+
+7. Click on the **Outputs** tab.
+8. Copy the **Websocket URL** 
+9. On your local machine:
+    1. Go to **awsconfig.js**
+    2. Paste the URL from cloudformation into the field **websocket**
+
+10. Open index.html in your browser.
 
 # Looking to the Future
 
