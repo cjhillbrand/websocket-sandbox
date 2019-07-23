@@ -436,6 +436,27 @@ That's it! Now your chatroom has full functional chatrooms and user names!
 3. Delete the WebSocket from API Gateway
 4. Delete all tables from DynamoDB.
 
+# Deploying with SAM CLI
+1. Make sure you hvae the aws sam cli downloaded
+2. Navigate, in your terminal to the directory 
+
+    `websocket-sandbox/resources/`
+
+3. create an s3 bucket by running the command
+    
+    `aws s3 mb s3://<bucketName>`
+
+4. Run the following commmand:
+    
+    `sam package --output-template-file packaged.yaml --s3-bucket <bucketName>`
+
+*Note: Make sure the bucket names in the above two commands are the exact same*
+
+5. Finally run:
+    
+    `aws cloudformation deploy --template-file ./packaged.yaml --stack-name <custom stack name>`
+
+
 # Looking to the Future
 
 **Q.** How can we federate who accesses the websocket? 
