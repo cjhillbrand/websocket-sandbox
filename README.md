@@ -487,3 +487,5 @@ Run the command:
 * S3: Place all of our static content here! This is a cheap, easy, and secure way to store our files. S3 also has website hosting capabilities.
 
 
+### References:
+This lab was inspired by the release notes done by Chris Munns. To visit the page visit [here](https://aws.amazon.com/blogs/compute/announcing-websocket-apis-in-amazon-api-gateway/)
