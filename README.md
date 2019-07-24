@@ -455,7 +455,7 @@ That's it! Now your chatroom has full functional chatrooms and user names!
 
 5. Finally run:
     
-    `aws cloudformation deploy --template-file ./packaged.yaml --stack-name <custom stack name>  --capabilities CAPABILITY_IAM`
+    `sam deploy --template-file ./packaged.yaml --stack-name <custom stack name>  --capabilities CAPABILITY_IAM`
 
 6. Navigate to the CloudFormation dashboard 
 <a href="https://console.aws.amazon.com/cloudformation" target="_blank">here.</a> 
@@ -468,7 +468,7 @@ That's it! Now your chatroom has full functional chatrooms and user names!
 
 10. Open index.html in your browser.
 
-##Cleaning up SAM CLI
+## Cleaning up SAM CLI
 Run the command:
     `aws cloudformation delete-stack --stack-name <Your Stack Name>`
 
