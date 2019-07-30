@@ -24,6 +24,7 @@ a message is sent to the APIGatway that containts the action as "message" that r
 APIGateway websocket has three defualt routes: $connect, $disconnect, and $default. These routes are triggered when a socket is opened, closed, and have no other matching routes respectively.
 To read more please visit: 
 <a href="https://aws.amazon.com/api-gateway/" target="_blank">here</a>.
+* **Cloud9**: Cloud9 it will be your "development environment". To know more about Cloud9, including pricing, click [here](https://aws.amazon.com/cloud9/). Cloud9 provides free tier.
 * On *the programming side*: We are using raw unadultarated javascript and html for the browser and User Interface. And for the lambda function we are using node.js version 10.
 
 </details>
@@ -48,12 +49,39 @@ In this lab we are going to create 3 microservices. These microservices manage a
 
 There are three lambda Funtions for this lab to show that once orientated with the WebSocket API and the microservice pattern, you can then easily deploy new services with ease.
 
-Before we begin with tasks:
-* It is recommended that you clone the GitHub Repo to your local machine located 
-<a href="https://github.com/cjhillbrand/websocket-sandbox" target="_blank">here</a>.
-* Note that from this point forward any and all resources will be reference as *[Prefix][Resource]* 
-    * Prefix: We include this prefix so incase there are multiple people working on one account there won't be any collisions. This will be a unique string of characters that you choose. 
-    * Resource: This is the given resource name that the documentation gives it.
+<img src="./screenshots/WebSocketDiagram.png" alt="console" width="300">
+
+## TASK 0: Cloud9 - Create your environment
+
+### STEP 1 - Access your account
+1. Login to your account
+2. Select a region (take note of the region) - We recommend us-east-1 (Virginia) or us-east-2 (Ohio)
+
+*Note: Be sure that you have permissions to create resources on your account. For the purpose of this workshop, having administrative privileges is the best option.*
+
+### STEP 2 - Launch your Cloud9 environment
+1. On the AWS console, go to Cloud9. 
+	* Go to the Cloud9 section of the console
+	* Select **Create environment**
+	* Give a name to your environment. **Important:** If you are sharing the same account and region with a colleague, be sure to take note of the identification of your environment, and be careful to not to destroy your colleague environment.
+	* For the "environment settings":
+		* For "Environment type" choose `Create a new instance for environment (EC2)`
+		* For "Instance type" choose `t2.micro (1 GiB RAM + 1 vCPU)*`
+		* Leave the other configuration settings at their default values and click **Next step**, and then **Create environment**
+
+In a few seconds your environment will be available. You can close the Welcome tab.
+
+### STEP 3 - Clone this repository
+
+Down on your Cloud9 console, a terminal is available. Go to the terminal and clone this repository. This repository contains the source code.
+~~~
+$ git clone https://github.com/cjhillbrand/websocket-sandbox.git
+~~~
+
+
+Before we begin with tasks: note that from this point forward any and all resources will be reference as *[Prefix][Resource]* 
+* Prefix: We include this prefix so incase there are multiple people working on one account there won't be any collisions. This will be a unique string of characters that you choose. 
+* Resource: This is the given resource name that the documentation gives it.
 
 ## Task 1: Creating DynamoDB Tables
 
@@ -79,7 +107,7 @@ Each Lambda function has it's own source code, and accesses different services, 
 | `[Prefix]SendMessage`   | <a href="resources/aws-utils/DispatchLambda/index.js" target="_blank">Link to Source</a>   | <a href="resources/aws-utils/DispatchLambda/role.json" target="_blank">Link to Role</a>  | DynamoDB WebSocket |
 | `[Prefix]Disconnect`    | <a href="resources/aws-utils/DisconnectLambda/index.js" target="_blank">Link to Source</a> | <a href="resources/aws-utils/DispatchLambda/role.json" target="_blank">Link to Role</a>   | DynamoDB           |
 
-### Step 1: Creating the Lambda Functions and inputting code. 
+### STEP 1: Creating the Lambda Functions and inputting code. 
 
 1. Navigate to the 
 <a href="https://console.aws.amazon.com/lambda/home" target="_blank">Lambda Dashboard</a>
@@ -101,12 +129,17 @@ Each Lambda function has it's own source code, and accesses different services, 
         * Take some time and read over the code for each function. They either perform some action to DynamoDB or send a message via the websocket. Moving forward this fundamental understanding of the code helps understand how our chatroom deals with the information given to it. 
         
         *Note: The code for each function is made to handle this lab and the extended lab. There is a comment in each .js file that says **This is the beginning of the code for the extended lab.** Feel free to continue reading but is only neccessary for the extended lab.*
+    7. Set up your environment variable:
+        1. Scroll past the code editor to the **Environment Variables** panel.
+        2. For **Key**, put **TABLE_CR**
+        3. For **Value**, put `[Prefix]client-records` 
 
-### Step 2: Adjusting Permissions
-*Note: For Lambda functions that need permissions to our WebSocket, we need to first receive the ARN for our WebSocket before attaching the permission. With this in mind the one function that needs this permission requires us to complete this step after we have created the Websocket* 
+### STEP 2: Adjusting Permissions
+*Note: For Lambda functions that need permissions to our WebSocket, we need to first receive the ARN for our WebSocket before attaching the permission. With this in mind the one function that needs this permission requires us to complete this step after we have created the Websocket*
+**FOR EACH ONE OF YOUR LAMBDA FUNCTIONS DO THE FOLLOWING** 
 1. Scroll down on the page of your lambda function and find the section *Execution Role* 
 2. Check to see if there is a link to the role that you created previously. Open that link in another tab of your browser.
-3. We are now at the IAM Access and Policy page for our Role. If we have done everything correctly thus far regarding the permissions there should be none under the *Permission Policies* Table. 
+3. We are now at the IAM Access and Policy page for our Role. If we have done everything correctly thus far regarding the permissions there should be one policy, **LambdaBasicExecutionPolicy**. 
 4. Click on the **+ Add inline policy** button located to the right and midway down the page. 
 5. Click on the **JSON** Tab. This is where we can add in our custom permissions to our role.
 6. Paste the policy (role.json) in each respective functions folder to the editor.
@@ -133,7 +166,7 @@ Each Lambda function has it's own source code, and accesses different services, 
     </details>
 8. For the name put, **Custom-Inline-Policy** (since these are inline policies and only in the scope of each respective role there will not be any *naming* overlap)
 
-### Step 3: Testing your Lambda Functions
+### STEP 3: Testing your Lambda Functions
 Refer to each Drop Down to learn how to test each of the Lambda Functions.
 <details>
 <summary>Test Connect</summary>
@@ -265,7 +298,7 @@ Congratulations you are done testing the **Disconnect** function.
 
 ## Task 3: Creating the WebSocket on API Gateway
 
-### Step 1: Create WebSocket
+### STEP 1: Create WebSocket
 1. Navigate to the API Gateway console 
 <a href="https://console.aws.amazon.com/apigateway/home" target="_blank">here</a>.
 2. Depending on the state of your account you can find a **Create API** or **Get Started** Button. Click on the one that you see and you are going to be take a create API page.
@@ -276,7 +309,7 @@ Congratulations you are done testing the **Disconnect** function.
     4. For Description enter, **WebSocket for a Chatroom web page**.
     5. Click **Create API**
 
-### Step 2: Creating a role for API Gateway
+### STEP 2: Creating a role for API Gateway
 1. Go to the IAM dashboard 
 <a href="https://console.aws.amazon.com/iam/home" target="_blank">here</a>.
 2. Click on **Roles** 
@@ -295,12 +328,12 @@ Congratulations you are done testing the **Disconnect** function.
     7. For the name put **Custom-Inline-Policy** and then press **Save changes**
 8. Copy the **Role ARN** or keep this info handy. We will be using it very shortly.
 
-### Step 3: Add a Messaging Route
+### STEP 3: Add a Messaging Route
 1. Head back to the Dashboard of your WebSocket
 1. If you are not already, navigate to the **routes** page.
 2. In the box **New Route Key** enter, **dispatch**, and click the checkmark to the right of the box.
 
-### Step 4: Configuring the Target Backend
+### STEP 4: Configuring the Target Backend
 While still on the page thats titled *Provide information about the target backend that this route will call and whether the incoming payload should be modified.* Do the following:
 1. Make sure that the **Lambda Function** radio is pressed and **Use Lambda Proxy Integration** is pressed.
 2. For Lambda function enter **SendMessage**. This field should suggest a lambda function you have already made.
@@ -309,7 +342,7 @@ While still on the page thats titled *Provide information about the target backe
 5. Press **Save** and click **Ok** for any pop-ups.
 6. Repeat these steps for the $connect and $disconnect, but with their respective lambda functions.
 
-### Step 5: Deploying the WebSocket
+### STEP 5: Deploying the WebSocket
 1. Click on the **Actions** dropdown, and select **Deploy API**
 2. For the **Deployment Stage** enter click on **[New Stage]**
     1. For **Stage Name** enter, **development**
@@ -321,12 +354,12 @@ While still on the page thats titled *Provide information about the target backe
 
 ## Task 4: Creating the GUI for the Chatroom
 *Note: This task is completed using a **Google Chrome Browser**, and the lab has only been tested using **Google Chrome** and Firefox** please be aware that some performance issues may arise if using other browsers than these.*
-### Step 1: Configure Websocket on the UI
-1. On your local machine navigate to: websocket-sandbox/chatroom/aws-utils.js
+### STEP 1: Configure Websocket on the UI
+1. On your Cloud9 Environment navigate to: websocket-sandbox/chatroom/aws-utils.js
 2. Under the **AWS_CONFIG** for the key **websocket** enter the Websocket URL we grabbed in the last task.
 
-### Step 2: Test UI Functionality
-1. On a browser on your local machine open websocket-sandbox/chatroom/index.html
+### STEP 2: Test UI Functionality
+1. On a browser on your Cloud9 Environment open websocket-sandbox/chatroom/index.html
 2. Open the console on your browser. *Note: There are different ways to do this, but for Google Chrome and Firefox just right click and then press **inspect** then navigate to the console pane* 
 3. The console should look like this:
 
@@ -388,10 +421,15 @@ Follow the steps in the Simple lab for Task 1 and create another DynamoDB Table,
 | `[Prefix]JoinRoom`      | <a href="resources/aws-utils/JoinRoomLambda/index.js" target="_blank">Source Link</a>    | <a href="resources/aws-utils/JoinRoomLambda/role.json" target="_blank">Role Link</a>     | DynamoDB WebSocket | `join-room`  |
 | `[Prefix]LeaveRoom`     | <a href="resources/aws-utils/LeaveRoomLambda/index.js" target="_blank">Source Link</a>   | <a href="resources/aws-utils/LeaveRoomLambda/role.json" target="_blank">Role Link</a>    | DynamoDB WebSocket | `leave-room` |
 
-### Step 1: Create the new Lambda Functions
-For this task we are going to follow the same instructions as Task 2 in the Simple Lab, except just be sure to use the correct names, source code, and role.json when configuring. (Which is located under the directory listed above.)
+### STEP 1: Create the new Lambda Functions
+For this task we are going to follow the same instructions as Task 2 in the Simple Lab, except:
+* use the correct names, source code, and role.json when configuring. (Which is located in the table above.)
+* For the **Environment Variables** include an additional variable:
+    * For **Key** put, `TABLE_RMU`
+    * For **Value** put, `[Prefix]room-messages-users`
 
-### Step 2: Update our old Lambda Functions' Permissions
+
+### STEP 2: Update our old Lambda Functions' Permissions
 We also need to go back and edit some of our permissions to some of our lmabda functions. The two that we need to go back and edit are **Disconnect** and **SendMessage**.
 1. Go to the lambda dashboard.
 2. Select the lambda function you want to alter.
@@ -400,7 +438,7 @@ We also need to go back and edit some of our permissions to some of our lmabda f
 5. Click **Edit Policy**
 6. Click **JSON**
 7. Input updated permissions:
-    1. On your local machine, find the correct directory for the function you are working with, labeled above.
+    1. On your Cloud9 Environment, find the correct directory for the function you are working with, labeled above.
     2. Copy the **role-extended.json** and paste into the editor
     
     *Note: For Dispatch you are only adding one more resource, which is the newly created DynamoDB table. Copying and pasting may not be the quickest way to update this, instead I suggest changing the resource to be:*
@@ -414,6 +452,14 @@ We also need to go back and edit some of our permissions to some of our lmabda f
 9. Finally Click **Save Changes**
 
 *Note: You must re-enter the custom ARNs into the new policies for newly made functions and revised policies. This **WILL** cause issues if this isnt configured properly.*
+
+### STEP 3: Update our old Lambda Functions' Environment Variables
+1. For the lambda function `[Prefix]Disconnect` and `[Prefx]Dispatch` navigate back to the lambda functions' dashboard.
+2. Scroll down to the **Environment Variables** section. 
+3. Add another Environment variable:
+    * For **Key** put, TABLE_RMU
+    * For **Value** put, `[Prefix]room-messages-users`
+4. Press **Save** in the top right corner.
 
 ## Task 3: Adding **MORE** Routes to our WebSocket
 1. Navigate to the API Gateway Dashboard and click on your websocket, **chatroom-websocket**. 
@@ -437,36 +483,38 @@ That's it! Now your chatroom has full functional chatrooms and user names!
 4. Delete all tables from DynamoDB.
 
 # Deploying with SAM CLI
-*Note: The below instructions only deploy the **Simple** stack, comparable to the infrastructure set up in the **Simple Lab**. If you want to deploy the full stack replace the file **template-simple.yml** to **template-full.yml** in **Step 4***
-1. Make sure you have the aws sam cli downloaded
+*Note: The below instructions only deploy the **Simple** stack, comparable to the infrastructure set up in the **Simple Lab**. If you want to deploy the full stack replace the file **template-simple.yml** to **template-full.yml** in **STEP 4***
+1. Make sure you have the aws sam cli downloaded, if you are using Cloud9 SAM CLI is already available to use.
 2. Navigate, in your terminal to the directory 
-
-    `websocket-sandbox/resources/`
-
+~~~
+websocket-sandbox/resources/
+~~~
 3. create an s3 bucket by running the command
-    
-    `aws s3 mb s3://<bucketName>`
-
+~~~
+aws s3 mb s3://<bucketName>
+~~~
 4. Run the following commmand:
-    
-    `sam package --template-file template-simple.yml --output-template-file packaged.yaml --s3-bucket <bucketName>`
-
+~~~    
+sam package --template-file template-simple.yml --output-template-file packaged.yaml --s3-bucket <bucketName>
+~~~
 *Note: Make sure the bucket names in the above two commands are the exact same*
 
 5. Finally run:
-    
-    `sam deploy --template-file ./packaged.yaml --stack-name <custom stack name>  --capabilities CAPABILITY_IAM`
-
+~~~    
+sam deploy --template-file ./packaged.yaml --stack-name <custom stack name>  --capabilities CAPABILITY_IAM
+~~~
 6. Navigate to the CloudFormation dashboard 
 <a href="https://console.aws.amazon.com/cloudformation" target="_blank">here.</a> 
 
 7. Click on the **Outputs** tab.
 8. Copy the **Websocket URL** 
-9. On your local machine:
+9. On **Cloud 9 Environment**:
     1. Go to **awsconfig.js**
     2. Paste the URL from cloudformation into the field **websocket**
 
 10. Open index.html in your browser.
+
+*Note: If you deployed both template files there will be two distinct CloudFormation stacks that must be deleted!!!*
 
 ## Cleaning up SAM CLI
 Run the command:
