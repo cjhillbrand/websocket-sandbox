@@ -48,9 +48,8 @@ In this lab we are going to create 3 microservices. These microservices manage a
     * **Disconnect** This function cleans up any session data that was related to the user that disconnected.
 
 There are three lambda Funtions for this lab to show that once orientated with the WebSocket API and the microservice pattern, you can then easily deploy new services with ease.
-<div style="text-align:center">
-<img src="./screenshots/WebSocketDiagram.png" alt="console" width="300">
-</div>
+
+<img src="./screenshots/WebSocketDiagram.png" alt="console" width="450">
 
 ## TASK 0: Cloud9 - Create your environment
 
@@ -482,9 +481,12 @@ That's it! Now your chatroom has full functional chatrooms and user names!
 2. Delete all roles associated with the lambda functions **AND** the role attached to API Gateway
 3. Delete the WebSocket from API Gateway
 4. Delete all tables from DynamoDB.
+5. Delete your Cloud9 environment
 
 # Deploying with SAM CLI
 *Note: The below instructions only deploy the **Simple** stack, comparable to the infrastructure set up in the **Simple Lab**. If you want to deploy the full stack replace the file **template-simple.yml** to **template-full.yml** in **STEP 4***
+
+*Note: the **Deploying with SAM CLI** section is designed to be done independently from the **Simple/Extended Lab** you will replicate resources if you execute this*
 1. Make sure you have the aws sam cli downloaded, if you are using Cloud9 SAM CLI is already available to use.
 2. Navigate, in your terminal to the directory 
 ~~~
@@ -494,7 +496,7 @@ websocket-sandbox/resources/
 ~~~
 aws s3 mb s3://<bucketName>
 ~~~
-4. Run the following commmand:
+4. Run the following commmand: (Replace **template-simple.yml** to **template-full.yml** to deploy the full stack)
 ~~~    
 sam package --template-file template-simple.yml --output-template-file packaged.yaml --s3-bucket <bucketName>
 ~~~
@@ -518,9 +520,15 @@ sam deploy --template-file ./packaged.yaml --stack-name <custom stack name>  --c
 *Note: If you deployed both template files there will be two distinct CloudFormation stacks that must be deleted!!!*
 
 ## Cleaning up SAM CLI
-Run the command:
-    `aws cloudformation delete-stack --stack-name <Your Stack Name>`
-
+1. Run the command:
+~~~
+aws cloudformation delete-stack --stack-name <Your Stack Name>
+~~~
+2. Delete the S3 bucket that you created:
+*Note the `--force` command will delete the bucket even if there is versioning, or there are objects in the bucket. **DO NOT RUN THE COMMAND** if you use this bucket for anything outside of this Lab*
+~~~
+aws s3 rb s3://<bucketName> --force
+~~~
 # Looking to the Future
 
 **Q.** How can we federate who accesses the websocket? 
