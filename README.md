@@ -51,6 +51,7 @@ There are three lambda Funtions for this lab to show that once orientated with t
 <div style="text-align:center">
 <img src="./screenshots/WebSocketDiagram.png" alt="console" width="300">
 </div>
+
 ## TASK 0: Cloud9 - Create your environment
 
 ### STEP 1 - Access your account
