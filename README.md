@@ -48,9 +48,9 @@ In this lab we are going to create 3 microservices. These microservices manage a
     * **Disconnect** This function cleans up any session data that was related to the user that disconnected.
 
 There are three lambda Funtions for this lab to show that once orientated with the WebSocket API and the microservice pattern, you can then easily deploy new services with ease.
-
+<div style="text-align:center">
 <img src="./screenshots/WebSocketDiagram.png" alt="console" width="300">
-
+</div>
 ## TASK 0: Cloud9 - Create your environment
 
 ### STEP 1 - Access your account
