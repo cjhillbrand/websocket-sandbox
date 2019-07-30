@@ -83,7 +83,7 @@ Before we begin with tasks: note that from this point forward any and all resour
 * Prefix: We include this prefix so incase there are multiple people working on one account there won't be any collisions. This will be a unique string of characters that you choose. 
 * Resource: This is the given resource name that the documentation gives it.
 
-## Task 1: Creating DynamoDB Tables
+## TASK 1: Creating DynamoDB Tables
 
 1. Visit the 
 <a href="https://console.aws.amazon.com/dynamodb/" target="_blank">DynamoDB console</a>
@@ -98,7 +98,7 @@ Before we begin with tasks: note that from this point forward any and all resour
 
 Wait until the table is created and that the table name and primary keys are correct. *Make sure to note **casing** for primary key*
 
-## Task 2: Creating the Lambda functions
+## TASK 2: Creating the Lambda functions
 Each Lambda function has it's own source code, and accesses different services, which directly affects the roles and permissions assigned to it. Refer to the table below for configurations.
 
 | Function Name | Location of Source                                                                         | Location of Role                                                                                              | Services Accessed  |
@@ -296,7 +296,7 @@ Congratulations you are done testing the **Disconnect** function.
 </details> 
 
 
-## Task 3: Creating the WebSocket on API Gateway
+## TASK 3: Creating the WebSocket on API Gateway
 
 ### STEP 1: Create WebSocket
 1. Navigate to the API Gateway console 
@@ -350,9 +350,9 @@ While still on the page thats titled *Provide information about the target backe
     3. Press **Deploy**
 3. Keep track of the **WebSocket URL** this is used in our local code.
 
-*Note: When adjusting permissions for the lambda we couldn't start adjusting for one of them until this step has been completed. Please go back to **Adjusting Permissions** for **Task 2**. The best way to copy the ARNs is to have an **IAM**, **API Gateway** and **DynamoDB** tab open so you can switch between the two copying and pasting ARNs.*
+*Note: When adjusting permissions for the lambda we couldn't start adjusting for one of them until this step has been completed. Please go back to **Adjusting Permissions** for **TASK 2**. The best way to copy the ARNs is to have an **IAM**, **API Gateway** and **DynamoDB** tab open so you can switch between the two copying and pasting ARNs.*
 
-## Task 4: Creating the GUI for the Chatroom
+## TASK 4: Creating the GUI for the Chatroom
 *Note: This task is completed using a **Google Chrome Browser**, and the lab has only been tested using **Google Chrome** and Firefox** please be aware that some performance issues may arise if using other browsers than these.*
 ### STEP 1: Configure Websocket on the UI
 1. On your Cloud9 Environment navigate to: websocket-sandbox/chatroom/aws-utils.js
@@ -408,12 +408,12 @@ The purpose of this extended portion is:
 
 *Note: This lab must be done once the first lab is done*
 
-## Task 1: Create **ANOTHER** DynamoDB Table
+## TASK 1: Create **ANOTHER** DynamoDB Table
 Follow the steps in the Simple lab for Task 1 and create another DynamoDB Table, but change the following:
 1. Table Name: `[Prefix]room-messages-users`
 2. Primary Key: **room**
 
-## Task 2: Deploying **MORE** Lambda functions.
+## TASK 2: Deploying **MORE** Lambda functions.
 | Function Name | Location of Source                                                                       | Location of Role |Permissions        | Route      |
 |---------------|------------------------------------------------------------------------------------------|------------------|--------------------|------------| 
 | `[Prefix]RegisterUser`  | <a href="resources/aws-utils/RegisterUserLambda/index.js" target="_blank">Source Link</a>| <a href="resources/aws-utils/RegisterUserLambda/role.json" target="_blank">Role Link</a> | DynamoDB           | `register`   |
@@ -461,7 +461,7 @@ We also need to go back and edit some of our permissions to some of our lmabda f
     * For **Value** put, `[Prefix]room-messages-users`
 4. Press **Save** in the top right corner.
 
-## Task 3: Adding **MORE** Routes to our WebSocket
+## TASK 3: Adding **MORE** Routes to our WebSocket
 1. Navigate to the API Gateway Dashboard and click on your websocket, **chatroom-websocket**. 
 2. Click on the **routes** tab on the sidebar. Do the following for each new route:
     3. Create a new route with the **route name** in the table above 
