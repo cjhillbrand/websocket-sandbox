@@ -395,9 +395,7 @@ if everything up to this point has worked there should be one event logged in ou
 5. If this lab is being completed in conjunction with other individuals and you want to try and send messages to eachother all you have to do is change the awsconfig.js. Change it to:
 ```javascript
 const AWS_CONFIG = {
-    "region": "us-east-1",
     "websocket": "<websocket of your partner>",
-    "name": "Websocket-Lab",
 }
 ```
 now everyone should have the same websocket URL. 
@@ -418,10 +416,10 @@ Follow the steps in the Simple lab for Task 1 and create another DynamoDB Table,
 ## TASK 2: Deploying **MORE** Lambda functions.
 | Function Name | Location of Source                                                                       | Location of Role |Permissions        | Route      |
 |---------------|------------------------------------------------------------------------------------------|------------------|--------------------|------------| 
-| `[Prefix]RegisterUser`  | <a href="resources/aws-utils/RegisterUserLambda/index.js" target="_blank">Source Link</a>| <a href="resources/aws-utils/RegisterUserLambda/role.json" target="_blank">Role Link</a> | DynamoDB           | `register`   |
-| `[Prefix]CreateRoom`    | <a href="resources/aws-utils/CreateRoomLambda/index.js" target="_blank">Source Link</a>  | <a href="resources/aws-utils/CreateRoomLambda/role.json" target="_blank">Role Link</a>   | DynamoDB WebSocket | `new-room`   |
-| `[Prefix]JoinRoom`      | <a href="resources/aws-utils/JoinRoomLambda/index.js" target="_blank">Source Link</a>    | <a href="resources/aws-utils/JoinRoomLambda/role.json" target="_blank">Role Link</a>     | DynamoDB WebSocket | `join-room`  |
-| `[Prefix]LeaveRoom`     | <a href="resources/aws-utils/LeaveRoomLambda/index.js" target="_blank">Source Link</a>   | <a href="resources/aws-utils/LeaveRoomLambda/role.json" target="_blank">Role Link</a>    | DynamoDB WebSocket | `leave-room` |
+| `[Prefix]RegisterUser`  | <a href="resources/aws-utils/RegisterUserLambda/index.js" target="_blank">Source Link</a>| <a href="resources/aws-utils/RegisterUserLambda/role.json" target="_blank">Link to Role</a> | DynamoDB           | `register`   |
+| `[Prefix]CreateRoom`    | <a href="resources/aws-utils/CreateRoomLambda/index.js" target="_blank">Source Link</a>  | <a href="resources/aws-utils/CreateRoomLambda/role.json" target="_blank">Link to Role</a>   | DynamoDB WebSocket | `new-room`   |
+| `[Prefix]JoinRoom`      | <a href="resources/aws-utils/JoinRoomLambda/index.js" target="_blank">Source Link</a>    | <a href="resources/aws-utils/JoinRoomLambda/role.json" target="_blank">Link to Role</a>     | DynamoDB WebSocket | `join-room`  |
+| `[Prefix]LeaveRoom`     | <a href="resources/aws-utils/LeaveRoomLambda/index.js" target="_blank">Source Link</a>   | <a href="resources/aws-utils/LeaveRoomLambda/role.json" target="_blank">Link to Role</a>    | DynamoDB WebSocket | `leave-room` |
 
 ### STEP 1: Create the new Lambda Functions
 For this task we are going to follow the same instructions as Task 2 in the Simple Lab, except:
