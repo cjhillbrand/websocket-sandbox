@@ -52,6 +52,9 @@ exports.handler = async (event) => {
         return returnVal;
     }
 
+    // This is the end of the code for the simple lab. Feel free to continue reading.
+    // Make sure TO COPY ALL OF THE CODE IN THIS FILE.
+
     const { TABLE_RMU } = process.env;
     const scanParams = {
         TableName : TABLE_RMU,

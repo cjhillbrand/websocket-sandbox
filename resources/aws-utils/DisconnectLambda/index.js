@@ -45,6 +45,8 @@ exports.handler = async (event) => {
     
     // This is the end of the Simple Lab code the rest is
     // for the EXTENDED lab.
+    // Make sure TO COPY ALL OF THE CODE IN THIS FILE.
+
     const { TABLE_RMU } = process.env;
     params = {
         TableName: TABLE_RMU,

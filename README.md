@@ -1,7 +1,9 @@
 # Websocket-Lab
 Welcome to the Websocket-Lab. The purpose of this lab is to introduce yourself to the AWS Websocket on Amazon API Gateway,
 released on December 18, 2018. (To read more about the release please visit
-<a href="https://aws.amazon.com/blogs/compute/announcing-websocket-apis-in-amazon-api-gateway/" target="blank">here.</a> 
+<a href="https://aws.amazon.com/blogs/compute/announcing-websocket-apis-in-amazon-api-gateway/" target="_blank">here.</a> 
+
+*Note: If this is being viewed in a .md file, opening a new tab on click is not supported with `target="_blank"`, when clicking a link please do `Command + Click` to open a link in a new tab*
 <details>
 <summary> Please refer below for a short description of the services used in this lab: </summary>
 <br>
@@ -80,7 +82,7 @@ $ git clone https://github.com/cjhillbrand/websocket-sandbox.git
 
 
 Before we begin with tasks: note that from this point forward any and all resources will be reference as *[Prefix][Resource]* 
-* Prefix: We include this prefix so incase there are multiple people working on one account there won't be any collisions. This will be a unique string of characters that you choose. 
+* Prefix: We include this prefix so incase there are multiple people working on one account there won't be any collisions. This will be a unique string of characters that you choose. A simple and short prefix is the best choice. For example, `env01`, `R2D2`, `C3PO` are all appropiate choices of prefixes, just take note of the casing.
 * Resource: This is the given resource name that the documentation gives it.
 
 ## TASK 1: Creating DynamoDB Tables
@@ -128,7 +130,7 @@ Each Lambda function has it's own source code, and accesses different services, 
     6. Copy and paste the code for each function (located in the table above) into the editor. Click **Save** in the top right corner when finished.
         * Take some time and read over the code for each function. They either perform some action to DynamoDB or send a message via the websocket. Moving forward this fundamental understanding of the code helps understand how our chatroom deals with the information given to it. 
         
-        *Note: The code for each function is made to handle this lab and the extended lab. There is a comment in each .js file that says **This is the beginning of the code for the extended lab.** Feel free to continue reading but is only neccessary for the extended lab.*
+        *Note: The code for each function is made to handle this lab and the extended lab. There is a comment in each .js file that says **This is the beginning of the code for the extended lab.** Feel free to continue reading but is only neccessary for the extended lab. Make sure to copy and paste ALL OF THE CODE IN THE FILE*
     7. Set up your environment variable:
         1. Scroll past the code editor to the **Environment Variables** panel.
         2. For **Key**, put **TABLE_CR**
@@ -139,10 +141,10 @@ Each Lambda function has it's own source code, and accesses different services, 
 **FOR EACH ONE OF YOUR LAMBDA FUNCTIONS DO THE FOLLOWING** 
 1. Scroll down on the page of your lambda function and find the section *Execution Role* 
 2. Check to see if there is a link to the role that you created previously. Open that link in another tab of your browser.
-3. We are now at the IAM Access and Policy page for our Role. If we have done everything correctly thus far regarding the permissions there should be one policy, **LambdaBasicExecutionPolicy**. 
+3. We are now at the IAM Access and Policy page for our Role. If we have done everything correctly thus far regarding the permissions there should be one policy, **AWSLambdaBasicExecutionRole**. 
 4. Click on the **+ Add inline policy** button located to the right and midway down the page. 
 5. Click on the **JSON** Tab. This is where we can add in our custom permissions to our role.
-6. Paste the policy (role.json) in each respective functions folder to the editor.
+6. Paste the policy (role.json located in the table above) in each respective functions folder to the editor.
 7. Replace the \<ARN> with the ARN for the designated resource.
     <details>
     <summary> Finding DynamoDB ARN </summary>
@@ -161,7 +163,7 @@ Each Lambda function has it's own source code, and accesses different services, 
     2. Click on your WebSocket.
     3. Select any route.
     4. Under the box labeled **Route Request** there will be an ARN, but it will only be **SPECIFIC TO THAT ROUTE**.
-    5. To make the ARN general enough copy and paste up until, but not including the route name.
+    5. To make the ARN general enough copy and paste up until, but not including the route name. An example of this ARN would look like this: `arn:aws:execute-api:{region}:{account ID}:{API ID}/*`
 
     </details>
 8. For the name put, **Custom-Inline-Policy** (since these are inline policies and only in the scope of each respective role there will not be any *naming* overlap)
