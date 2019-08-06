@@ -1,5 +1,5 @@
 const AWS_CONFIG = {
-    "websocket": "wss://jbyr1hc6l2.execute-api.us-east-1.amazonaws.com/development",
+    "websocket": "<Enter your Websocket URL here>",
 }
 
 const _routes = {
