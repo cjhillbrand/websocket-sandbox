@@ -135,6 +135,7 @@ Each Lambda function has it's own source code, and accesses different services, 
         1. Scroll past the code editor to the **Environment Variables** panel.
         2. For **Key**, put **TABLE_CR**
         3. For **Value**, put `[Prefix]client-records` 
+        4. Press **Save**
 
 ### STEP 2: Adjusting Permissions
 *Note: For Lambda functions that need permissions to our WebSocket, we need to first receive the ARN for our WebSocket before attaching the permission. With this in mind the one function that needs this permission requires us to complete this step after we have created the Websocket*
@@ -319,12 +320,12 @@ Congratulations you are done testing the **Disconnect** function.
 3. Click on **Create Role** 
 4. Choose **API Gateway** as the resource and then scroll to the bottom and press next.
 5. Click on **Next: Tags** and then **Next: Review**
-6. For role name enter, `[PrefixWebSocketAPIRole`, then click **Create**
+6. For role name enter, `[Prefix]WebSocketAPIRole`, then click **Create**
 7. Confirm the Role was made by clicking on it.
 8. Now we need to add an line policy so our WebSocket can invoke lambda functions
-    1. Go to the repository and find the directory websocket-sandbox/resources/APIGateway
+    1. Go to the repository and find the directory `websocket-sandbox/resources/APIGateway`
     2. Copy the file **role.json**
-    3. Go back to the **IAM** webpage
+    3. Go back to the **IAM** webpage and click on the Role we just created.
     4. Click on **+ Add inline policy** 
     5. Click **JSON** and then paste into the editor.
     6. Click **review changes**
@@ -339,11 +340,11 @@ Congratulations you are done testing the **Disconnect** function.
 ### STEP 4: Configuring the Target Backend
 While still on the page thats titled *Provide information about the target backend that this route will call and whether the incoming payload should be modified.* Do the following:
 1. Make sure that the **Lambda Function** radio is pressed and **Use Lambda Proxy Integration** is pressed.
-2. For Lambda function enter **SendMessage**. This field should suggest a lambda function you have already made.
+2. For Lambda function enter `[]Prefix]SendMessage`. This field should suggest a lambda function you have already made.
 3. Enter in the **API Gateway ARN Role** we made two steps ago.  
 4. Cick **Use Default Timeout** 
 5. Press **Save** and click **Ok** for any pop-ups.
-6. Repeat these steps for the $connect and $disconnect, but with their respective lambda functions.
+6. **Repeat these steps for the $connect and $disconnect, but with their respective lambda functions.**
 
 ### STEP 5: Deploying the WebSocket
 1. Click on the **Actions** dropdown, and select **Deploy API**
@@ -363,23 +364,19 @@ While still on the page thats titled *Provide information about the target backe
 
 ### STEP 2: Test UI Functionality
 1. On a browser on your Cloud9 Environment open websocket-sandbox/chatroom/index.html
-2. Open the console on your browser. *Note: There are different ways to do this, but for Google Chrome and Firefox just right click and then press **inspect** then navigate to the console pane* 
-3. The console should look like this:
-
-<img src="./screenshots/console.png" alt="console" width="200">
-
-if everything up to this point has worked there should be one event logged in our console.
-
+2. **Preview** this file in **Cloud9** by pressing the **Preview** button located on a toolbar next to **Run**. 
+3. Click the icon located on the top right of the preview. If you drag your mouse over it a message will read **Pop out into new window** click this.
+4. You can copy the **URL** in the browser and open multiple tabs to simulate multiple in the ChatRoom.
 4. The moment we have been waiting for, sending and receiving messages.
     1. Since this is the basic chatroom, we did not introduce the ability for custom names, or the creation of joining chatrooms. If you are interested in doing this take a look at the **Extended Lab** which walks through how to do this. To make sure that our UI knows we are in a *Simple Mode*:
-        * enter **no-rooms** in the **Please Enter a Name** text box.
-        * Click **Register**
+        * enter **no-rooms** in the **Please Enter a Name** text box. 
+        * Click **Register** *Note: if you have multiple windows open, do this step and the previous for each window before moving forward*
         * The **Submit** button under the message text box should now be enabled.
     If not refresh the page, enter **no-rooms** and try again.
     2. Enter any message in the text box labeled **Type a Message here**
     3. Press **Submit** under the text box.
-    4. There may be a delay before the message shows up, but eventually we should receive the message we just sent.
-    5. Take a look at the **Message Event** in the console. It can be of value to look at the payload here and look at the code in the **SendMessage** lambda and see where our message traveled and how it got transformed. Look ecspecially at this snippet of code in the **SendMessage** Lambda:
+    4. We should receive the message we just sent. *If you have multiple windows open check to see if the message in one window was sent to all other windows.*
+    5. Look at the code in the **SendMessage** lambda and see where our message traveled and how it got transformed. Look ecspecially at this snippet of code in the **SendMessage** Lambda:
     ```javascript
     for (let connectionId of connectionData) {
         try {
