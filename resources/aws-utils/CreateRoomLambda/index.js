@@ -1,5 +1,4 @@
 var AWS = require('aws-sdk');
-AWS.config.update({region: 'us-east-1'});
 
 /*********************************************************************\
  * This is the create room lambda function. This function is used for *

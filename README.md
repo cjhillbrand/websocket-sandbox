@@ -81,7 +81,7 @@ $ git clone https://github.com/cjhillbrand/websocket-sandbox.git
 ~~~
 
 
-Before we begin with tasks: note that from this point forward any and all resources will be reference as *[Prefix][Resource]* 
+Before we begin with tasks: note that from this point forward any and all resources will be referenced as *[Prefix][Resource]* 
 * Prefix: We include this prefix so incase there are multiple people working on one account there won't be any collisions. This will be a unique string of characters that you choose. A simple and short prefix is the best choice. For example, `env01`, `R2D2`, `C3PO` are all appropiate choices of prefixes, just take note of the casing.
 * Resource: This is the given resource name that the documentation gives it.
 
@@ -93,7 +93,7 @@ Before we begin with tasks: note that from this point forward any and all resour
 2. Click on the **Create Table** button.
 3. At this stage:
     1. Enter `[Prefix]client-records` for table name.
-    2. Enter **"ID"** for the primary key.
+    2. Enter `ID` for the primary key.
     3. Leave the rest as the default.
     3. Press **create**
 4. This is going to start spinning up our table.
@@ -114,7 +114,7 @@ Each Lambda function has it's own source code, and accesses different services, 
 1. Navigate to the 
 <a href="https://console.aws.amazon.com/lambda/home" target="_blank">Lambda Dashboard</a>
 
-2. For each Lambda Function above:
+2. **For each Lambda Function above:**
     1. Click on the button **create a function** If the button is not visible, check on the console for a menu on the left, with the label *functions*, and then hit on the ***Create Function*** button.
     2. Select **Author From Scratch** 
     3. Under the section **Basic Information**:
@@ -138,6 +138,7 @@ Each Lambda function has it's own source code, and accesses different services, 
 
 ### STEP 2: Adjusting Permissions
 *Note: For Lambda functions that need permissions to our WebSocket, we need to first receive the ARN for our WebSocket before attaching the permission. With this in mind the one function that needs this permission requires us to complete this step after we have created the Websocket*
+
 **FOR EACH ONE OF YOUR LAMBDA FUNCTIONS DO THE FOLLOWING** 
 1. Scroll down on the page of your lambda function and find the section *Execution Role* 
 2. Check to see if there is a link to the role that you created previously. Open that link in another tab of your browser.
@@ -333,7 +334,7 @@ Congratulations you are done testing the **Disconnect** function.
 ### STEP 3: Add a Messaging Route
 1. Head back to the Dashboard of your WebSocket
 1. If you are not already, navigate to the **routes** page.
-2. In the box **New Route Key** enter, **dispatch**, and click the checkmark to the right of the box.
+2. In the box **New Route Key** enter, `dispatch`, and click the checkmark to the right of the box.
 
 ### STEP 4: Configuring the Target Backend
 While still on the page thats titled *Provide information about the target backend that this route will call and whether the incoming payload should be modified.* Do the following:
@@ -352,7 +353,7 @@ While still on the page thats titled *Provide information about the target backe
     3. Press **Deploy**
 3. Keep track of the **WebSocket URL** this is used in our local code.
 
-*Note: When adjusting permissions for the lambda we couldn't start adjusting for one of them until this step has been completed. Please go back to **Adjusting Permissions** for **TASK 2**. The best way to copy the ARNs is to have an **IAM**, **API Gateway** and **DynamoDB** tab open so you can switch between the two copying and pasting ARNs.*
+*Note: When adjusting permissions for the lambda functions we couldn't start adjusting for one of them until this step has been completed. Please go back to **Adjusting Permissions** for **TASK 2**.*
 
 ## TASK 4: Creating the GUI for the Chatroom
 *Note: This task is completed using a **Google Chrome Browser**, and the lab has only been tested using **Google Chrome** and Firefox** please be aware that some performance issues may arise if using other browsers than these.*
