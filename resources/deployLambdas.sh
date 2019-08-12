@@ -3,11 +3,14 @@ function deployViaSAM() {
     upperEnvName=$1
     envName=$(echo $1 | tr 'A-Z' 'a-z')
     region=$2
-    echo $region
-    echo $envName
     $(echo aws s3 mb s3://${envName}lambdas.app --region ${region})
+    if [ $? != 0 ]; then
+        echo "Failed to make bucket, try another Environment Name"
+        exit 0
+    fi
     $(echo sam package --template-file lambdas.yml --output-template-file lambdas-packaged.yaml --s3-bucket ${envName}lambdas.app)
-    $(echo aws cloudformation deploy --template-file ./lambdas-packaged.yaml --stack-name ${envName}-Stack --capabilities CAPABILITY_IAM --parameter-overrides FunctionNamePrefix=${upperEnvName})
+    $(echo aws cloudformation deploy --template-file ./lambdas-packaged.yaml --stack-name ${envName}-PreLab-WebSocket-Stack --capabilities CAPABILITY_IAM --parameter-overrides FunctionNamePrefix=${upperEnvName})
+    $(rm -rf lambdas-packaged.yaml)
 }
 
 function getRegion() {
@@ -26,7 +29,6 @@ if [ "$1" == "" ]; then
     echo example: source deployLambdas.sh testenv
 else
     envName=$(echo $1 | tr 'a-z' 'A-Z')
-    echo $envName
     region=$(getRegion) 
     deployViaSAM $envName $region
 fi
