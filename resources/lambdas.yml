@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: 'A Chatroom'
+Parameters:
+  FunctionNamePrefix:
+    Type: String
+Resources:
+
+  clientRecords:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: !Sub ${FunctionNamePrefix}Client-Records
+      PrimaryKey:
+        Name: ID
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  Connect: 
+      Type: AWS::Serverless::Function
+      Properties: 
+        FunctionName: !Sub ${FunctionNamePrefix}Connect
+        Runtime: nodejs10.x
+        Handler: index.handler
+        CodeUri: './aws-utils/ConnectionLambda/index.js'
+        Policies: 
+          - Version: '2012-10-17'
+            Statement:
+              Effect: Allow
+              Action: 
+                - dynamodb:PutItem
+              Resource: !GetAtt clientRecords.Arn
+        Environment:
+          Variables:
+            TABLE_CR: !Ref clientRecords
+  Disconnect:
+      Type: AWS::Serverless::Function
+      Properties:
+        FunctionName: !Sub ${FunctionNamePrefix}Disconnect
+        Runtime: nodejs10.x
+        Handler: index.handler
+        CodeUri: './aws-utils/DisconnectLambda/index.js'
+        Policies: 
+          - Version: '2012-10-17'
+            Statement:
+              Effect: Allow
+              Action:
+                - dynamodb:DeleteItem
+              Resource: !GetAtt clientRecords.Arn
+        Environment:
+          Variables:
+            TABLE_CR: !Ref clientRecords
+  Dispatch:
+      Type: AWS::Serverless::Function
+      Properties:
+        FunctionName: !Sub ${FunctionNamePrefix}SendMessage
+        Runtime: nodejs10.x
+        Handler: index.handler
+        CodeUri: './aws-utils/DispatchLambda'
+        Policies: 
+          - Version: '2012-10-17' 
+            Statement:
+              Effect: Allow
+              Action:
+                - dynamodb:DeleteItem
+                - dynamodb:Scan
+                - dynamodb:UpdateItem
+              Resource: !GetAtt clientRecords.Arn
+        Environment:
+          Variables:
+            TABLE_CR: !Ref clientRecords
