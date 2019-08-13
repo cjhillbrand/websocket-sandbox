@@ -94,6 +94,11 @@ $ cd websocket-sandbox/resources
 ```
 $ source deployLambdas.sh [Prefix]
 ```
+If everything went well you should see a message like the following:
+```
+Successfully created/updated stack - [Prefix]-PreLab-WebSocket-Stack
+
+```
 Here are a few notes about this shell script:
 * The [Prefix] is the name we chose right after we cloned the repository in the previous task.
 * The Shell script uses the Serverless Application Model (or SAM for short) to deploy some preliminary resources:
@@ -125,7 +130,7 @@ Here are a few notes about this shell script:
 6. For role name enter, `[Prefix]WebSocketAPIRole`, then click **Create**
 7. Confirm the Role was made by clicking on it.
 8. Now we need to add an line policy so our WebSocket can invoke lambda functions
-    1. Go to the repository and find the directory `websocket-sandbox/resources/APIGateway`
+    1. Go to the repository and find the directory `websocket-sandbox/resources/aws-utils/APIGateway`
     2. Copy the file **role.json**
     3. Go back to the **IAM** webpage and click on the Role we just created.
     4. Click on **+ Add inline policy** 
@@ -142,11 +147,11 @@ Here are a few notes about this shell script:
 ### STEP 4: Configuring the Target Backend
 While still on the page thats titled *Provide information about the target backend that this route will call and whether the incoming payload should be modified.* Do the following:
 1. Make sure that the **Lambda Function** radio is pressed and **Use Lambda Proxy Integration** is pressed.
-2. For Lambda function enter `[]Prefix]SendMessage`. This field should suggest a lambda function you have already made.
+2. For Lambda function enter `[Prefix]SendMessage`. This field should suggest a lambda function you have already made.
 3. Enter in the **API Gateway ARN Role** we made two steps ago.  
 4. Cick **Use Default Timeout** 
 5. Press **Save** and click **Ok** for any pop-ups.
-6. **Repeat these steps for the $connect and $disconnect, but with their respective lambda functions.**
+6. **Repeat *Step 4* for the $connect and $disconnect, but with their respective lambda functions.**
 
 ### STEP 5: Deploying the WebSocket
 1. Click on the **Actions** dropdown, and select **Deploy API**
@@ -155,8 +160,6 @@ While still on the page thats titled *Provide information about the target backe
     2. You can leave the descriptions blank, or enter what you like.
     3. Press **Deploy**
 3. Keep track of the **WebSocket URL** this is used in our local code.
-
-*Note: When adjusting permissions for the lambda functions we couldn't start adjusting for one of them until this step has been completed. Please go back to **Adjusting Permissions** for **TASK 2**.*
 
 ## TASK 4: Adjusting Permissions for [Prefix]SendMessage
 1. Navigate to the IAM dashboard <a href="https://console.aws.amazon.com/iam/home" target="_blank">here</a>.
@@ -172,18 +175,25 @@ While still on the page thats titled *Provide information about the target backe
         3. Under **Route Request** you should see a Field labeled **ARN** copy and paste this so it takes the following form:
         `arn:aws:execute-api:{region}:{account ID}:{API ID}/*`
     </details>
+    
+    5. press **Review Policy**
+    
+    *Note: you may receive an error when reviewing the polciy. You can ignore this and move forward*
+
+    6. For name enter, **Custom-Inline-Policy**
+    7. Press **Create Policy**
 
 ## TASK 5: Creating the GUI for the Chatroom
-*Note: This task is completed using a **Google Chrome Browser**, and the lab has only been tested using **Google Chrome** and Firefox** please be aware that some performance issues may arise if using other browsers than these.*
+*Note: This task is completed using a **Google Chrome Browser**, and the lab has only been tested using **Google Chrome** and **Firefox** please be aware that some performance issues may arise if using other browsers than these.*
 ### STEP 1: Configure Websocket on the UI
-1. On your Cloud9 Environment navigate to: websocket-sandbox/chatroom/aws-utils.js
-2. Under the **AWS_CONFIG** for the key **websocket** enter the Websocket URL we grabbed in the last task.
+1. On your Cloud9 Environment navigate to: websocket-sandbox/chatroom/awsconfig.js
+2. Under the **AWS_CONFIG** for the key **websocket** enter the Websocket URL. This can be found by going to our WebSocket on API Gateway and clicking **Stages** and then **development**
 
 ### STEP 2: Test UI Functionality
-1. On a browser on your Cloud9 Environment open websocket-sandbox/chatroom/index.html
+1. On a browser on your **Cloud9** Environment open `websocket-sandbox/chatroom/index.html`
 2. **Preview** this file in **Cloud9** by pressing the **Preview** button located on a toolbar next to **Run**. 
 3. Click the icon located on the top right of the preview. If you drag your mouse over it a message will read **Pop out into new window** click this.
-4. You can copy the **URL** in the browser and open multiple tabs to simulate multiple in the ChatRoom.
+4. You can copy the **URL** in the browser and open multiple tabs to simulate multiple people in the ChatRoom.
 4. The moment we have been waiting for, sending and receiving messages.
     1. Since this is the basic chatroom, we did not introduce the ability for custom names, or the creation of joining chatrooms. If you are interested in doing this take a look at the **Extended Lab** which walks through how to do this. To make sure that our UI knows we are in a *Simple Mode*:
         * enter **no-rooms** in the **Please Enter a Name** text box. 
