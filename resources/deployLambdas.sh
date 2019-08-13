@@ -8,9 +8,9 @@ function deployViaSAM() {
         echo "Failed to make bucket, try another Environment Name"
         exit 0
     fi
-    $(echo sam package --template-file lambdas.yml --output-template-file lambdas-packaged.yaml --s3-bucket ${envName}lambdas.app)
-    $(echo aws cloudformation deploy --template-file ./lambdas-packaged.yaml --stack-name ${envName}-PreLab-WebSocket-Stack --capabilities CAPABILITY_IAM --parameter-overrides FunctionNamePrefix=${upperEnvName})
-    $(rm -rf lambdas-packaged.yaml)
+    $(echo sam package --template-file lambdas.yml --output-template-file packaged-lambdas.yaml --s3-bucket ${envName}lambdas.app)
+    $(echo aws cloudformation deploy --template-file ./packaged-lambdas.yaml --stack-name ${envName}-PreLab-WebSocket-Stack --capabilities CAPABILITY_IAM --parameter-overrides FunctionNamePrefix=${upperEnvName})
+    $(rm -rf packaged-lambdas.yaml)
 }
 
 function getRegion() {

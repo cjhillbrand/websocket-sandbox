@@ -85,222 +85,24 @@ Before we begin with tasks: note that from this point forward any and all resour
 * Prefix: We include this prefix so incase there are multiple people working on one account there won't be any collisions. This will be a unique string of characters that you choose. A simple and short prefix is the best choice. For example, `env01`, `R2D2`, `C3PO` are all appropiate choices of prefixes, just take note of the casing.
 * Resource: This is the given resource name that the documentation gives it.
 
-## TASK 1: Creating DynamoDB Tables
-
-1. Visit the 
-<a href="https://console.aws.amazon.com/dynamodb/" target="_blank">DynamoDB console</a>
-
-2. Click on the **Create Table** button.
-3. At this stage:
-    1. Enter `[Prefix]client-records` for table name.
-    2. Enter `ID` for the primary key.
-    3. Leave the rest as the default.
-    3. Press **create**
-4. This is going to start spinning up our table.
-
-Wait until the table is created and that the table name and primary keys are correct. *Make sure to note **casing** for primary key*
-
-## TASK 2: Creating the Lambda functions
-Each Lambda function has it's own source code, and accesses different services, which directly affects the roles and permissions assigned to it. Refer to the table below for configurations.
-
-| Function Name | Location of Source                                                                         | Location of Role                                                                                              | Services Accessed  |
-|---------------|--------------------------------------------------------------------------------------------|------------------|--------------------|
-| `[Prefix]Connect`       | <a href="resources/aws-utils/ConnectionLambda/index.js" target="_blank">Link to Source</a> | <a href="resources/aws-utils/ConnectionLambda/role.json" target="_blank">Link to Role</a>   | DynamoDB           |
-| `[Prefix]SendMessage`   | <a href="resources/aws-utils/DispatchLambda/index.js" target="_blank">Link to Source</a>   | <a href="resources/aws-utils/DispatchLambda/role.json" target="_blank">Link to Role</a>  | DynamoDB WebSocket |
-| `[Prefix]Disconnect`    | <a href="resources/aws-utils/DisconnectLambda/index.js" target="_blank">Link to Source</a> | <a href="resources/aws-utils/DispatchLambda/role.json" target="_blank">Link to Role</a>   | DynamoDB           |
-
-### STEP 1: Creating the Lambda Functions and inputting code. 
-
-1. Navigate to the 
-<a href="https://console.aws.amazon.com/lambda/home" target="_blank">Lambda Dashboard</a>
-
-2. **For each Lambda Function above:**
-    1. Click on the button **create a function** If the button is not visible, check on the console for a menu on the left, with the label *functions*, and then hit on the ***Create Function*** button.
-    2. Select **Author From Scratch** 
-    3. Under the section **Basic Information**:
-        1. For Function name put the function name listed in the table above.
-        2. For **Runtime**, select the latest supported version for Node.js
-        3. For **Permissions**, we need to give the lambda function the required permissions we have listed above.
-            * Click on **Choose or create an execution role**. This unfolds a section where we can trigger the creation of the role for our lambda function.
-            * For execution Role, select **Create new role from AWS policy templates**. This will expand two fields below the section: 
-                * For the **Role Name** input the `[Prefix] + function-name + Role`, so for example the **Connect** function's role would be **[Prefix]ConnectRole**. 
-                * Do not select anything for the **Policy template** field.
-    4. Click the **Create Function** button on the bottom of the right hand side of the page. You should now be taken to the dashboard of that lambda function.
-    5. Scroll down to where you see the function code. It looks like a code editor and should have one open tab with the file *index.js* 
-    6. Copy and paste the code for each function (located in the table above) into the editor. Click **Save** in the top right corner when finished.
-        * Take some time and read over the code for each function. They either perform some action to DynamoDB or send a message via the websocket. Moving forward this fundamental understanding of the code helps understand how our chatroom deals with the information given to it. 
-        
-        *Note: The code for each function is made to handle this lab and the extended lab. There is a comment in each .js file that says **This is the beginning of the code for the extended lab.** Feel free to continue reading but is only neccessary for the extended lab. Make sure to copy and paste ALL OF THE CODE IN THE FILE*
-    7. Set up your environment variable:
-        1. Scroll past the code editor to the **Environment Variables** panel.
-        2. For **Key**, put **TABLE_CR**
-        3. For **Value**, put `[Prefix]client-records` 
-        4. Press **Save**
-
-### STEP 2: Adjusting Permissions
-*Note: For Lambda functions that need permissions to our WebSocket, we need to first receive the ARN for our WebSocket before attaching the permission. With this in mind the one function that needs this permission requires us to complete this step after we have created the Websocket*
-
-**FOR EACH ONE OF YOUR LAMBDA FUNCTIONS DO THE FOLLOWING** 
-1. Scroll down on the page of your lambda function and find the section *Execution Role* 
-2. Check to see if there is a link to the role that you created previously. Open that link in another tab of your browser.
-3. We are now at the IAM Access and Policy page for our Role. If we have done everything correctly thus far regarding the permissions there should be one policy, **AWSLambdaBasicExecutionRole**. 
-4. Click on the **+ Add inline policy** button located to the right and midway down the page. 
-5. Click on the **JSON** Tab. This is where we can add in our custom permissions to our role.
-6. Paste the policy (role.json located in the table above) in each respective functions folder to the editor.
-7. Replace the \<ARN> with the ARN for the designated resource.
-    <details>
-    <summary> Finding DynamoDB ARN </summary>
-    <br>
-
-    1. Go to the <a href="https://console.aws.amazon.com/dynamodb/" target="_blank">DynamoDB console</a>
-    2. Click on **Tables** and choose **[Prefix]client-records**
-    3. In the **Overview** section the very last Key will be the **Amazon Resource Name (ARN)**.
-
-    </details>
-    <details>
-    <summary> Finding API Gateway WebSocket ARN </summary>
-    <br>
-
-    1. Got to the <a href="https://console.aws.amazon.com/apigateway/home" target="_blank">API Gateway Console</a>
-    2. Click on your WebSocket.
-    3. Select any route.
-    4. Under the box labeled **Route Request** there will be an ARN, but it will only be **SPECIFIC TO THAT ROUTE**.
-    5. To make the ARN general enough copy and paste up until, but not including the route name. An example of this ARN would look like this: `arn:aws:execute-api:{region}:{account ID}:{API ID}/*`
-
-    </details>
-8. For the name put, **Custom-Inline-Policy** (since these are inline policies and only in the scope of each respective role there will not be any *naming* overlap)
-
-### STEP 3: Testing your Lambda Functions
-Refer to each Drop Down to learn how to test each of the Lambda Functions.
-<details>
-<summary>Test Connect</summary>
-<br>
-
-1. Go to your Connect function dashboard.
-2. Click on **Test** in the top right hand corner.
-    1. For **Event Name** put, **MyConnectTest** 
-    2. For the JSON data, put:
-    ```json
-        {
-            "requestContext" : {
-                "domainName": "testName",
-                "stage": "testStage",
-                "connectionId": "testConnection"
-            }
-        }
-    ```
-    3. Press **Save**
-4. From the Lambda Dashboard, press **Test**.
-5. A Window should pop up at the top of the page. Lets inspect it:
-    1. The window should be green. If we expand the window we should see the result returned from our function.
-    2. The return object should look like this:
-    ```json
-        {
-            "isBase64Encoded": false,
-            "statusCode": 200,
-            "body": "{\"put\":\"SUCCESS\"}"
-        }
-    ```
-    3. Note the `"put": "SUCCESS"` this tells us that we were able to put an object to DynamoDB. If this does not say success, make sure all of the naming conventions, environment variables, and permissions are all correct.
-6. If there was a success we have to delete the test item we just placed from DynamoDB. (This also ensures that our lambda is working correctly.)
-7. Go to the DynamoDB dashboard. And click on your `[Prefix]client-records` table.
-8. Click on the tab **Items**.
-9. Select the test data that we just put in the table.
-10. Click **Actions** and then click **Delete**.
-
-We are done testing our **Connect** function
-</details> 
-
-<details>
-<summary>Test SendMessage</summary>
-<br>
-
-1. Go to your SendMessage function dashboard.
-2. Click on **Test** in the top right hand corner.
-    1. For **Event Name** put, **MyConnectTest** 
-    2. For the JSON data, put:
-    ```json
-        {
-            "requestContext": {
-                "stage": "testStage",
-                "domainName": "testDomain"
-            },
-            "body": "{\"value:\":\"testMessage\",\"room\":\"testRoom\",\"name\":\"no-rooms\"}"
-        }
-    ```
-    3. Press **Save**
-4. From the Lambda Dashboard, press **Test**.
-5. A Window should pop up at the top of the page. Lets inspect it:
-    1. The window should be green. If we expand the window we should see the result returned from our function.
-    2. The return object should look like this:
-    ```json
-        {
-            "statusCode": 200,
-            "body": "{\"scanStatus\":\"SUCCESS\"}"
-        }
-    ```
-    3. Note the `"scanStatus": "SUCCESS"` this tells us we were able to query our DynamoDB table. If we got `FAIL` for our `scanStatus` it is worth reviewing:
-    * Our Lambda function permissions and to make sure we have the correct ARN
-    * Our DynamoDB name and make sure that it was in fact created.
-    * Make sure that we set up our DynamioDB Environment variable correctly.
-6. Note that we didn't attempt to send any data to our connections. We can verify this with the line that says `INFO: []` This in our code is our array of connection IDs and since there are none there was no attempt. 
-*Note: We didn't put in any pseudo connectionIDs in our table for the purpose of attempting to send to an invalid connection.
-
-We are done testing our **SendMessage** function
-</details> 
-
-<details>
-<summary>Test Disconnect</summary>
-<br>
-
-1. Go to you DynamoDB table.
-    1. Go to the DynamoDB console.
-    2. Click **Tables** 
-    3. Click on your `[Prefix]client-records` table.
-2. Click **Create item**
-3. In the drop down menu in the top left corner of the window, click **Text**
-3. Change the JSON to: 
-```json
-{
-    "ID": "TestID"
-}
+## TASK 1: Launching our Lambda Functions and Dynamo DB Table
+1. Navigate to the `/resources` directory:
 ```
-4. Click **Save** 
-5. Go to the Disconnect dashboard.
-    1. Go to the Lambda dashboard
-    2. Click on **Functions**
-    3. Click on `[Prefix]Disconnect`
-6. Click on **Test** 
-    1. For name enter, **MyDisconnectTest**
-    2. For the Json data enter: 
-    ```json
-    {
-        "requestContext": {
-            "connectionId": "TestID",
-            "domainName": "TestDomain",
-            "stage": "TestStage"
-        }
-    }
-    ```
-    3. Click on **Save**
-7. Click **Test** 
-8. Open the dropdown window. The result returned should look like this:
-    ```json
-    {
-        "statusCode": 200,
-        "body": "{\"delete\":\"SUCCESS\"}"
-    }
-    ```
-9. If you see `delete: fail`. Check the following:
-    * Make sure that your lambda function has the right permissions
-    * Make sure that you configured the correct environment variables.
-    * Make sure that you have the table in DynamoDB actually created
+$ cd websocket-sandbox/resources
+``` 
+2. Run the shell script `deployLambdas.sh`
+```
+$ source deployLambdas.sh [Prefix]
+```
+Here are a few notes about this shell script:
+* The [Prefix] is the name we chose right after we cloned the repository in the previous task.
+* The Shell script uses the Serverless Application Model (or SAM for short) to deploy some preliminary resources:
+    * A dynamoDB table named `[Prefix]client-records` this stores connection info for our Chat Room.
+    * Three lambda functions that take care of connecting to the WebSocket, sending messages through the WebSocket, and disconnecting from the WebSocket. We will use these functions when we create our WebSocket
+    * If you want to learn how to launch these manually, the extended lab covers everything we automated here.
+    * The script also created a S3 bucket that stores the code for the lambda functions. 
 
-Congratulations you are done testing the **Disconnect** function.
-</details> 
-
-
-## TASK 3: Creating the WebSocket on API Gateway
+## TASK 2: Creating the WebSocket on API Gateway
 
 ### STEP 1: Create WebSocket
 1. Navigate to the API Gateway console 
@@ -356,7 +158,22 @@ While still on the page thats titled *Provide information about the target backe
 
 *Note: When adjusting permissions for the lambda functions we couldn't start adjusting for one of them until this step has been completed. Please go back to **Adjusting Permissions** for **TASK 2**.*
 
-## TASK 4: Creating the GUI for the Chatroom
+## TASK 4: Adjusting Permissions for [Prefix]SendMessage
+1. Navigate to the IAM dashboard <a href="https://console.aws.amazon.com/iam/home" target="_blank">here</a>.
+2. Click on **Roles**
+3. Find the **Role** name `[Prefix]-stack-DispatchRole`
+4. Click on it
+    1. Click **Add inline policy**
+    2. Click **JSON**
+    3. Copy and paste the file `role.json` which can be found `websocket-sandbox/resources/aws-utils/DispatchLambda/role.json`
+    4. Replace `<Your WebSocket ARN/*>` with your WebSocket ARN <details><summary>Click me to find out how to find your WebSocket ARN</summary>
+        1. Navigate to your **WebSocket** that you created in the previous task.
+        2. Click on the **$connect** route.
+        3. Under **Route Request** you should see a Field labeled **ARN** copy and paste this so it takes the following form:
+        `arn:aws:execute-api:{region}:{account ID}:{API ID}/*`
+    </details>
+
+## TASK 5: Creating the GUI for the Chatroom
 *Note: This task is completed using a **Google Chrome Browser**, and the lab has only been tested using **Google Chrome** and Firefox** please be aware that some performance issues may arise if using other browsers than these.*
 ### STEP 1: Configure Websocket on the UI
 1. On your Cloud9 Environment navigate to: websocket-sandbox/chatroom/aws-utils.js

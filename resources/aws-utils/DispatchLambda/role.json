@@ -8,14 +8,6 @@
                 "execute-api:ManageConnections"
             ],
             "Resource": "<Your WebSocket ARN>/*"
-        }, {
-            "Effect": "Allow",
-            "Action": [
-                "dynamodb:DeleteItem",
-                "dynamodb:Scan",
-                "dynamodb:UpdateItem"
-            ],
-            "Resource": "<Your DynamoDB 'client-records' ARN>"
         }
     ]
 }
