@@ -161,7 +161,7 @@ While still on the page thats titled *Provide information about the target backe
     3. Press **Deploy**
 3. Keep track of the **WebSocket URL** this is used in our local code.
 
-## TASK 4: Adjusting Permissions for [Prefix]SendMessage
+## TASK 3: Adjusting Permissions for [Prefix]SendMessage
 1. Navigate to the IAM dashboard <a href="https://console.aws.amazon.com/iam/home" target="_blank">here</a>.
 2. Click on **Roles**
 3. Find the **Role** name `[Prefix]-stack-DispatchRole`
@@ -210,7 +210,7 @@ While still on the page thats titled *Provide information about the target backe
             await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: message}).promise();
         } catch (e) {
             if (e.statusCode == 410) {
-                await db.delete({TableName: "client-records", Key: { ID: connectionId }}).promise();
+                await db.delete({TableName: TABLE_CR, Key: { ID: connectionId }}).promise();
             }
         }
     }
@@ -234,9 +234,18 @@ The purpose of this extended portion is:
 *Note: This lab must be done once the first lab is done*
 
 ## TASK 1: Create **ANOTHER** DynamoDB Table
-Follow the steps in the Simple lab for Task 1 and create another DynamoDB Table, but change the following:
-1. Table Name: `[Prefix]room-messages-users`
-2. Primary Key: **room**
+1. Visit the DynamoDB console
+
+2. Click on the Create Table button.
+
+3. At this stage:
+
+    * Enter `[Prefix]room-messages-users` for table name.
+    * Enter **room** for the primary key.
+    * Leave the rest as the default.
+    * Press **Create**
+
+This is going to start spinning up our table.
 
 ## TASK 2: Deploying **MORE** Lambda functions.
 | Function Name | Location of Source                                                                       | Location of Role |Permissions        | Route      |
@@ -246,15 +255,79 @@ Follow the steps in the Simple lab for Task 1 and create another DynamoDB Table,
 | `[Prefix]JoinRoom`      | <a href="resources/aws-utils/JoinRoomLambda/index.js" target="_blank">Source Link</a>    | <a href="resources/aws-utils/JoinRoomLambda/role.json" target="_blank">Link to Role</a>     | DynamoDB WebSocket | `join-room`  |
 | `[Prefix]LeaveRoom`     | <a href="resources/aws-utils/LeaveRoomLambda/index.js" target="_blank">Source Link</a>   | <a href="resources/aws-utils/LeaveRoomLambda/role.json" target="_blank">Link to Role</a>    | DynamoDB WebSocket | `leave-room` |
 
-### STEP 1: Create the new Lambda Functions
-For this task we are going to follow the same instructions as Task 2 in the Simple Lab, except:
-* use the correct names, source code, and role.json when configuring. (Which is located in the table above.)
-* For the **Environment Variables** include an additional variable:
-    * For **Key** put, `TABLE_RMU`
-    * For **Value** put, `[Prefix]room-messages-users`
+### STEP 1: Creating the Lambda Functions and inputting code.
+Navigate to the Lambda Dashboard
+
+**For each Lambda Function above:**
+
+1. Click on the button create a function If the button is not visible, check on the console for a menu on the left, with the label functions, and then hit on the Create Function button.
+
+2. Select Author From Scratch
+
+3. Under the section Basic Information:
+
+    * For Function name put the function name listed in the table above.
+    * For Runtime, select the latest supported version for Node.js
+    * For Permissions, we need to give the lambda function the required permissions we have listed above.
+    * Click on Choose or create an execution role. This unfolds a section where we can trigger the creation of the role for our lambda function.
+    * For execution Role, select Create new role from AWS policy templates. This will expand two fields below the section:
+        * For the Role Name input the [Prefix] + function-name + Role, so for example the Connect function's role would be [Prefix]ConnectRole.
+        * Do not select anything for the Policy template field.
+    * Click the Create Function button on the bottom of the right hand side of the page. You should now be taken to the dashboard of that lambda function.
+
+4. Scroll down to where you see the function code. It looks like a code editor and should have one open tab with the file `index.js`
+
+5. Copy and paste the code for each function (located in the table above) into the editor. 
+
+6. Set up your environment variable:
+
+    * Scroll past the code editor to the Environment Variables panel.
+    * For **Key**, put `TABLE_CR`
+    * For **Value**, put `[Prefix]Client-records`
+    * Add another Environment Variable.
+    * For **Key**, put `TABLE_RMU`
+    * For **Value**, put `[Prefix]room-messages-users`
+
+7. Press **Save**
+
+Take some time and read over the code for each function. They either perform some action to DynamoDB or send a message via the websocket. Moving forward this fundamental understanding of the code helps understand how our chatroom deals with the information given to it.
 
 
-### STEP 2: Update our old Lambda Functions' Permissions
+### STEP 2: Adjusting Permissions
+*Note: For Lambda functions that need permissions to our WebSocket, we need to first receive the ARN for our WebSocket before attaching the permission. With this in mind the one function that needs this permission requires us to complete this step after we have created the Websocket*
+
+**FOR EACH ONE OF YOUR LAMBDA FUNCTIONS DO THE FOLLOWING** 
+1. Scroll down on the page of your lambda function and find the section *Execution Role* 
+2. Check to see if there is a link to the role that you created previously. Open that link in another tab of your browser.
+3. We are now at the IAM Access and Policy page for our Role. If we have done everything correctly thus far regarding the permissions there should be one policy, **AWSLambdaBasicExecutionRole**. 
+4. Click on the **+ Add inline policy** button located to the right and midway down the page. 
+5. Click on the **JSON** Tab. This is where we can add in our custom permissions to our role.
+6. Paste the policy (role.json located in the table above) in each respective functions folder to the editor.
+7. Replace the \<ARN> with the ARN for the designated resource.
+    <details>
+    <summary> Finding DynamoDB ARN </summary>
+    <br>
+
+    1. Go to the <a href="https://console.aws.amazon.com/dynamodb/" target="_blank">DynamoDB console</a>
+    2. Click on **Tables** and choose **[Prefix]client-records**
+    3. In the **Overview** section the very last Key will be the **Amazon Resource Name (ARN)**.
+
+    </details>
+    <details>
+    <summary> Finding API Gateway WebSocket ARN </summary>
+    <br>
+
+    1. Got to the <a href="https://console.aws.amazon.com/apigateway/home" target="_blank">API Gateway Console</a>
+    2. Click on your WebSocket.
+    3. Select any route.
+    4. Under the box labeled **Route Request** there will be an ARN, but it will only be **SPECIFIC TO THAT ROUTE**.
+    5. To make the ARN general enough copy and paste up until, but not including the route name. An example of this ARN would look like this: `arn:aws:execute-api:{region}:{account ID}:{API ID}/*`
+
+    </details>
+8. For the name put, **Custom-Inline-Policy** (since these are inline policies and only in the scope of each respective role there will not be any *naming* overlap)
+
+
+### STEP 3: Update our old Lambda Functions' Permissions
 We also need to go back and edit some of our permissions to some of our lmabda functions. The two that we need to go back and edit are **Disconnect** and **SendMessage**.
 1. Go to the lambda dashboard.
 2. Select the lambda function you want to alter.
@@ -278,7 +351,7 @@ We also need to go back and edit some of our permissions to some of our lmabda f
 
 *Note: You must re-enter the custom ARNs into the new policies for newly made functions and revised policies. This **WILL** cause issues if this isnt configured properly.*
 
-### STEP 3: Update our old Lambda Functions' Environment Variables
+### STEP 4: Update our old Lambda Functions' Environment Variables
 1. For the lambda function `[Prefix]Disconnect` and `[Prefx]Dispatch` navigate back to the lambda functions' dashboard.
 2. Scroll down to the **Environment Variables** section. 
 3. Add another Environment variable:

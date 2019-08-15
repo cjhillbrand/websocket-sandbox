@@ -20,7 +20,7 @@ function getRegion() {
 
 if [ "$1" == "" ]; then
     echo 
-    echo "** ERROR**"
+    echo "**ERROR**"
     echo At least the environment name must be provided
     echo 
     echo Usage:
