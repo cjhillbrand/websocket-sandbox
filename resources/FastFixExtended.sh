@@ -54,7 +54,7 @@ function getApiRoleArn() {
 }
 
 function updateEnvVariables() {
-    envName=$1
+    envName=$(echo $1 | tr 'a-z' 'A-Z')
     envVars=$(cat <<-EOF
 {
     "Variables":{
@@ -85,6 +85,6 @@ else
     apiId=$( getApiId $envName $region )
     crArn=$( getClientRecords $envName $region)
     apiRoleArn=$( getApiRoleArn $apiId )
-    #deployViaSAM $envName $region $apiId $crArn $apiRoleArn
+    deployViaSAM $envName $region $apiId $crArn $apiRoleArn
     updateEnvVariables $envName
 fi

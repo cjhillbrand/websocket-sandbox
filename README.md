@@ -381,6 +381,12 @@ We also need to go back and edit some of our permissions to some of our lmabda f
     2. For description choose whatever you like.
 5. Click **Deploy**
 
+## Fast Fix
+1. Run (Make sure [Prefix] is all caps):
+```
+source FastFixExtended.sh [Prefix]
+```
+2. Complete Task 2; Step 3. (Cloud9 AWS CLI still will not let us adjust permissions)
 
 That's it! Now your chatroom has full functional chatrooms and user names!
 
