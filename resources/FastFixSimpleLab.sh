@@ -17,7 +17,7 @@ function createWebSocket() {
     getApiRole=$(echo aws "iam list-roles --query 'Roles[?contains(RoleName,\`"$envName"WebSocketAPIRole\`)].Arn|[0]'")
     apiRoleArn=$(removeQuotes $( eval $getApiRole ))
     
-    if [ -n "$apiRoleArn" ]; then
+    if [ -z "$apiRoleArn" ]; then
         echo "Make sure that you have created ${envName}WebSocketAPIRole before running this script."
         echo "The instructions to complete this task is located in Task 2; Step 2"
         exit 1
@@ -32,7 +32,7 @@ function createWebSocket() {
     sendMessageCall=$(echo aws lambda get-function --function-name="$envName"SendMessage --query 'Configuration.FunctionArn' --output text)
     sendMessageArn=$(removeQuotes $( eval $sendMessageCall ))
 
-    if [ -n "$connectArn" ] || [ -n "$disconnectArn" ] || [ -n "$sendMessageArn" ]; then
+    if [ -z "$connectArn" ] || [ -z "$disconnectArn" ] || [ -z "$sendMessageArn" ]; then
         echo "One or more of your lambda functions are not deployed"
         echo "Please run `source deployLambdas.sh <envName>` before running this script"
         exit 1

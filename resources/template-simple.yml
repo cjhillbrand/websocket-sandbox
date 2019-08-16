@@ -110,7 +110,6 @@ Resources:
         Fn::Sub:
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Disconnect.Arn}/invocations
 
-
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     DependsOn: 

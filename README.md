@@ -169,7 +169,7 @@ While still on the page thats titled *Provide information about the target backe
 ```
 source FastFixSimple.sh [Prefix]
 ```
-*Note: You will still have to complete Task 3 and Task 4 since that is out of the scope of the CLI*
+*Note: You will still have to complete **Task 3** and **Task 4** since that is out of the scope of the CLI*
 ## TASK 3: Adjusting Permissions for [Prefix]SendMessage
 1. Navigate to the IAM dashboard <a href="https://console.aws.amazon.com/iam/home" target="_blank">here</a>.
 2. Click on **Roles**
@@ -179,6 +179,7 @@ source FastFixSimple.sh [Prefix]
     2. Click **JSON**
     3. Copy and paste the file `role.json` which can be found `websocket-sandbox/resources/aws-utils/DispatchLambda/role.json`
     4. Replace `<Your WebSocket ARN/*>` with your WebSocket ARN <details><summary>Click me to find out how to find your WebSocket ARN</summary>
+        0. If you did the **Fast Fix** for Task 2, the ARN is located in your terminal.
         1. Navigate to your **WebSocket** that you created in the previous task.
         2. Click on the **$connect** route.
         3. Under **Route Request** you should see a Field labeled **ARN** copy and paste this so it takes the following form:
@@ -196,7 +197,7 @@ source FastFixSimple.sh [Prefix]
 *Note: This task is completed using a **Google Chrome Browser**, and the lab has only been tested using **Google Chrome** and **Firefox** please be aware that some performance issues may arise if using other browsers than these.*
 ### STEP 1: Configure Websocket on the UI
 1. On your Cloud9 Environment navigate to: websocket-sandbox/chatroom/awsconfig.js
-2. Under the **AWS_CONFIG** for the key **websocket** enter the Websocket URL. This can be found by going to our WebSocket on API Gateway and clicking **Stages** and then **development**
+2. Under the **AWS_CONFIG** for the key **websocket** enter the Websocket URL. This can be found by going to our WebSocket on API Gateway and clicking **Stages** and then **development** (If you did the **FastFix in Task 2, the URL will be in the terminal)
 
 ### STEP 2: Test UI Functionality
 1. On a browser on your **Cloud9** Environment open `websocket-sandbox/chatroom/index.html`
