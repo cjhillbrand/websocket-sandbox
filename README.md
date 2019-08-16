@@ -109,6 +109,8 @@ Here are a few notes about this shell script:
 
 ## TASK 2: Creating the WebSocket on API Gateway
 
+*Note: To skip this task refer to the **FastFix** at the bottom of this Task*
+
 ### STEP 1: Create WebSocket
 1. Navigate to the API Gateway console 
 <a href="https://console.aws.amazon.com/apigateway/home" target="_blank">here</a>.
@@ -127,7 +129,7 @@ Here are a few notes about this shell script:
 3. Click on **Create Role** 
 4. Choose **API Gateway** as the resource and then scroll to the bottom and press next.
 5. Click on **Next: Tags** and then **Next: Review**
-6. For role name enter, `[Prefix]WebSocketAPIRole`, then click **Create**
+6. For role name enter, `[Prefix]WebSocketAPIRole`, then click **Create**. (Make sure the Prefix is all caps)
 7. Confirm the Role was made by clicking on it.
 8. Now we need to add an line policy so our WebSocket can invoke lambda functions
     1. Go to the repository and find the directory `websocket-sandbox/resources/aws-utils/APIGateway`
@@ -161,6 +163,13 @@ While still on the page thats titled *Provide information about the target backe
     3. Press **Deploy**
 3. Keep track of the **WebSocket URL** this is used in our local code.
 
+### FastFix: 
+1. Create the Role for the API. (Task 2; Step 2) We need to do this because Cloud9 does not have the permission to manipulate IAM roles from the CLI.
+2. Make sure that you have ran `deployLambdas.sh` and you have finished the previous step, then you can run:
+```
+source FastFixSimple.sh [Prefix]
+```
+*Note: You will still have to complete Task 3 and Task 4 since that is out of the scope of the CLI*
 ## TASK 3: Adjusting Permissions for [Prefix]SendMessage
 1. Navigate to the IAM dashboard <a href="https://console.aws.amazon.com/iam/home" target="_blank">here</a>.
 2. Click on **Roles**
@@ -183,7 +192,7 @@ While still on the page thats titled *Provide information about the target backe
     6. For name enter, **Custom-Inline-Policy**
     7. Press **Create Policy**
 
-## TASK 5: Creating the GUI for the Chatroom
+## TASK 4: Creating the GUI for the Chatroom
 *Note: This task is completed using a **Google Chrome Browser**, and the lab has only been tested using **Google Chrome** and **Firefox** please be aware that some performance issues may arise if using other browsers than these.*
 ### STEP 1: Configure Websocket on the UI
 1. On your Cloud9 Environment navigate to: websocket-sandbox/chatroom/awsconfig.js

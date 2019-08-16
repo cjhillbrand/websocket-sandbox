@@ -1,0 +1,312 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: 'A Chatroom'
+Parameters:
+  FunctionNamePrefix:
+    Type: String
+  ApiId:
+    Type: String
+  ClientRecordsArn:
+    Type: String
+  ClientRecordsName:
+    Type: String
+
+Resources:
+  RoomMessagesUsers:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: !Sub ${FunctionNamePrefix}Room-Messages-Users
+      PrimaryKey:
+        Name: room
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  RegisterUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${FunctionNamePrefix}RegisterUser
+      Runtime: nodejs10.x
+      Handler: index.handler
+      CodeUri: './aws-utils/RegisterUserLambda/index.js'
+      Policies: 
+        - Version: '2012-10-17'
+          Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:UpdateItem
+              - dynamodb:Scan
+            Resource:
+              - !Sub ${ClientRecordsArn}
+              - !GetAtt RoomMessagesUsers.Arn
+      Environment:
+        Variables:
+          TABLE_CR: !Sub ${ClientRecordsName}
+          TABLE_RMU: !Ref RoomMessagesUsers
+
+  JoinRoom:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${FunctionNamePrefix}JoinRoom
+      Runtime: nodejs10.x
+      Handler: index.handler
+      CodeUri: './aws-utils/JoinRoomLambda/index.js'
+      Policies: 
+        - Version: '2012-10-17'
+          Statement:
+            Effect: Allow
+            Action: 
+              - dynamodb:DeleteItem
+              - dynamodb:Scan
+              - dynamodb:UpdateItem
+              - dynamodb:PutItem    
+            Resource: 
+              - !Sub ${ClientRecordsArn}
+              - !GetAtt RoomMessagesUsers.Arn
+      Environment:
+        Variables:
+          TABLE_CR: !Sub ${ClientRecordsName}
+          TABLE_RMU: !Ref RoomMessagesUsers
+
+  CreateRoom:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${FunctionNamePrefix}CreateRoom
+      Runtime: nodejs10.x
+      Handler: index.handler
+      CodeUri: './aws-utils/CreateRoomLambda/index.js'
+      Policies:
+        - AmazonAPIGatewayInvokeFullAccess # We need to remove these and make them custom
+        - AmazonAPIGatewayAdministrator  # to the ARN for the Api Gateway
+        - Version: '2012-10-17'
+          Statement:
+            Effect: Allow
+            Action: 
+              - dynamodb:DeleteItem
+              - dynamodb:Scan
+              - dynamodb:UpdateItem
+              - dynamodb:PutItem 
+            Resource:
+              - !Sub ${ClientRecordsArn}
+              - !GetAtt RoomMessagesUsers.Arn
+      Environment:
+        Variables:
+          TABLE_CR: !Sub ${ClientRecordsName}
+          TABLE_RMU: !Ref RoomMessagesUsers
+
+  LeaveRoom:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${FunctionNamePrefix}LeaveRoom
+      Runtime: nodejs10.x
+      Handler: index.handler
+      CodeUri: './aws-utils/LeaveRoomLambda/index.js'
+      Policies: 
+        - Version: '2012-10-17'
+          Statement:
+            Effect: Allow
+            Action:
+              - execute-api:Invoke
+              - execute-api:ManageConnections
+            Resource: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*'
+        - Version: '2012-10-17'
+          Statement:
+            Effect: Allow
+            Action:
+              - dynamodb:DeleteItem
+              - dynamodb:Scan
+              - dynamodb:UpdateItem
+              - dynamodb:PutItem
+              - dynamodb:GetItem
+            Resource: 
+              - !Sub ${ClientRecordsArn}
+              - !GetAtt RoomMessagesUsers.Arn
+      Environment:
+        Variables:
+          TABLE_CR: !Sub ${ClientRecordsName}
+          TABLE_RMU: !Ref RoomMessagesUsers
+
+  RegisterUserLambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Sub ${ApiId}
+      Description: Register user integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RegisterUser.Arn}/invocations
+
+  CreateRoomLambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Sub ${ApiId}
+      Description: create room integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateRoom.Arn}/invocations
+
+  JoinRoomLambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Sub ${ApiId}
+      Description: Join room integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JoinRoom.Arn}/invocations
+
+  LeaveRoomLambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Sub ${ApiId}
+      Description: Leave Room integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub:
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LeaveRoom.Arn}/invocations
+
+  RegisterUserRoute:
+    Type: AWS::ApiGatewayV2::Route
+    DependsOn:
+      - RegisterUser
+    Properties:
+      ApiId: !Sub ${ApiId}
+      RouteKey: "register"
+      AuthorizationType: NONE
+      OperationName: RegisterRoute
+      RouteResponseSelectionExpression: $default
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref RegisterUserLambdaIntegration
+
+  JoinRoomRoute:
+    Type: AWS::ApiGatewayV2::Route
+    DependsOn:
+      - JoinRoom
+    Properties:
+      ApiId: !Sub ${ApiId}
+      RouteKey: "join-room"
+      AuthorizationType: NONE
+      OperationName: JoinRoomRoute
+      RouteResponseSelectionExpression: $default
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref JoinRoomLambdaIntegration
+
+  CreateRoomRoute:
+    Type: AWS::ApiGatewayV2::Route
+    DependsOn:
+      - CreateRoom
+    Properties: 
+      ApiId: !Sub ${ApiId}
+      RouteKey: "new-room"
+      AuthorizationType: NONE
+      OperationName: CreateRoomRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref CreateRoomLambdaIntegration
+
+  LeaveRoomRoute:
+    Type: AWS::ApiGatewayV2::Route
+    DependsOn:
+      - LeaveRoom
+    Properties:
+      ApiId: !Sub ${ApiId}
+      RouteKey: "leave-room"
+      AuthorizationType: NONE
+      OperationName: LeaveRoomRoute
+      Target: !Join
+        - '/'
+        - - 'integrations'
+          - !Ref LeaveRoomLambdaIntegration
+
+  RegisterUserResponse:
+    Type: AWS::ApiGatewayV2::RouteResponse
+    Properties:
+      RouteId: !Ref RegisterUserRoute
+      ApiId: !Sub ${ApiId}
+      RouteResponseKey: $default
+
+  RegisterUserIntegrationResponse:
+    Type: AWS::ApiGatewayV2::IntegrationResponse
+    Properties:
+      IntegrationId: !Ref RegisterUserLambdaIntegration
+      ApiId: !Sub ${ApiId}
+      IntegrationResponseKey: /201/
+
+  JoinRoomResponse:
+    Type: AWS::ApiGatewayV2::RouteResponse
+    Properties:
+      RouteId: !Ref JoinRoomRoute
+      ApiId: !Sub ${ApiId}
+      RouteResponseKey: $default
+
+  JoinRoomIntegrationResponse:
+    Type: AWS::ApiGatewayV2::IntegrationResponse
+    Properties:
+      IntegrationId: !Ref JoinRoomLambdaIntegration
+      ApiId: !Sub ${ApiId}
+      IntegrationResponseKey: /201/
+
+  Deployment: 
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - JoinRoomRoute
+      - CreateRoomRoute
+      - LeaveRoomRoute
+      - RegisterUserRoute
+      - JoinRoomResponse
+      - RegisterUserResponse
+    Properties:
+      ApiId: !Sub ${ApiId}
+  
+  Stage: 
+    Type: AWS::ApiGatewayV2::Stage
+    DependsOn:
+      Deployment
+    Properties:
+      StageName: development
+      Description: development stage
+      DeploymentId: !Ref Deployment
+      ApiId: !Sub ${ApiId}
+
+  WebSocketRegisterUserPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - RegisterUser
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref RegisterUser
+      Principal: apigateway.amazonaws.com
+  
+  WebSocketCreateRoomPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - CreateRoom
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref CreateRoom
+      Principal: apigateway.amazonaws.com
+
+  WebSocketJoinRoomPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - JoinRoom
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref JoinRoom
+      Principal: apigateway.amazonaws.com
+
+  WebSocketLeaveRoomPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - LeaveRoom
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LeaveRoom
+      Principal: apigateway.amazonaws.com

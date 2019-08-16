@@ -206,3 +206,6 @@ Outputs:
   WebsocketURL:
     Description: "URL for the newly deployed websocket"
     Value: !Join [ '', [ 'wss://', !Ref ChatroomWebsocket, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]
+  APIIDREF:
+    Description: "!Ref ApiId"
+    Value: !Ref ChatroomWebsocket

@@ -16,28 +16,28 @@ function createWebSocket() {
     # If this API Role does not exist than we should abandoned the script right away
     getApiRole=$(echo aws "iam list-roles --query 'Roles[?contains(RoleName,\`"$envName"WebSocketAPIRole\`)].Arn|[0]'")
     apiRoleArn=$(removeQuotes $( eval $getApiRole ))
-
-    if [ -z "$apiRoleArn" ] then;
+    
+    if [ -n "$apiRoleArn" ]; then
         echo "Make sure that you have created ${envName}WebSocketAPIRole before running this script."
         echo "The instructions to complete this task is located in Task 2; Step 2"
         exit 1
     fi
 
-    connectCall=$(echo aws lambda get-function --function-name=${envName}Connect --query 'Configuration.functionArn' --output text)
+    connectCall=$(echo aws lambda get-function --function-name="$envName"Connect --query 'Configuration.FunctionArn' --output text)
     connectArn=$(removeQuotes $( eval $connectCall ))
 
-    disconnectCall=$(echo aws lambda get-function --function-name=${envName}Disconnect --query 'Configuration.functionArn' --output text)
+    disconnectCall=$(echo aws lambda get-function --function-name="$envName"Disconnect --query 'Configuration.FunctionArn' --output text)
     disconnectArn=$(removeQuotes $( eval $disconnectCall ))
     
-    sendMessageCall=$(echo aws lambda get-function --function-name=${envName}SendMessage --query 'Configuration.functionArn' --output text)
+    sendMessageCall=$(echo aws lambda get-function --function-name="$envName"SendMessage --query 'Configuration.FunctionArn' --output text)
     sendMessageArn=$(removeQuotes $( eval $sendMessageCall ))
 
-    if [ -z "$connectArn" ] || [ -z "$disconnectArn" ] || [ -z "$sendMessageArn" ] then;
+    if [ -n "$connectArn" ] || [ -n "$disconnectArn" ] || [ -n "$sendMessageArn" ]; then
         echo "One or more of your lambda functions are not deployed"
         echo "Please run `source deployLambdas.sh <envName>` before running this script"
         exit 1
     fi
-
+    
     # Now we create the Web Socket now confident all preliminary resources have been created.
     websocketCreateCommand=$(echo aws apigatewayv2 --region "$region" create-api --name "$envName"Chatroom-WebSocket --protocol-type WEBSOCKET --route-selection-expression '\$request.body.action' --query ApiId --output text)
     websocketApiId=$(removeQuotes $( eval $websocketCreateCommand ))
@@ -54,14 +54,14 @@ function createWebSocket() {
     --query IntegrationId --output text --credentials-arn "$apiRoleArn")
 
     disconnectId=$(aws apigatewayv2 --region "$region" create-route --api-id "$websocketApiId"\
-    --route-key start-game --output text --query RouteId --target integrations/"$disconnectIntegration")
+    --route-key \$disconnect --output text --query RouteId --target integrations/"$disconnectIntegration")
 
-    disconnectIntegration=$(aws apigatewayv2 create-integration --api-id $websocketApiId --integration-type AWS_PROXY --integration-method POST\
+    sendMessageIntegration=$(aws apigatewayv2 create-integration --api-id $websocketApiId --integration-type AWS_PROXY --integration-method POST\
     --integration-uri arn:aws:apigateway:"$region":lambda:path/2015-03-31/functions/${sendMessageArn}/invocations\
     --query IntegrationId --output text --credentials-arn "$apiRoleArn")
 
     sendMessageId=$(aws apigatewayv2 --region "$region" create-route --api-id "$websocketApiId"\
-    --route-key \$disconnect --output text --query RouteId --target integrations/"$sendMessageIntegration")
+    --route-key dispatch --output text --query RouteId --target integrations/"$sendMessageIntegration")
     
     deploymentId=$(aws apigatewayv2 --region "$region" create-deployment --api-id "$websocketApiId" --query DeploymentId --output text)
 
