@@ -46,7 +46,10 @@ Resources:
               Effect: Allow
               Action:
                 - dynamodb:DeleteItem
-              Resource: !GetAtt clientRecords.Arn
+                - dynamodb:GetItem
+                - dynamodb:UpdateItem
+                - dynamodb:Scan
+              Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${FunctionNamePrefix}*'
         Environment:
           Variables:
             TABLE_CR: !Ref clientRecords
@@ -65,7 +68,7 @@ Resources:
                 - dynamodb:DeleteItem
                 - dynamodb:Scan
                 - dynamodb:UpdateItem
-              Resource: !GetAtt clientRecords.Arn
+              Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${FunctionNamePrefix}*'
         Environment:
           Variables:
             TABLE_CR: !Ref clientRecords

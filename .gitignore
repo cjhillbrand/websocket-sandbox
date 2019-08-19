@@ -1,2 +1,2 @@
 resources/aws-utils/deployLambda.sh
-resources/packaged-*
+resources/packaged*

@@ -82,7 +82,7 @@ $ git clone https://github.com/cjhillbrand/websocket-sandbox.git
 
 
 Before we begin with tasks: note that from this point forward any and all resources will be referenced as *[Prefix][Resource]* 
-* Prefix: We include this prefix so incase there are multiple people working on one account there won't be any collisions. This will be a unique string of characters that you choose. A simple and short prefix is the best choice. For example, `env01`, `R2D2`, `C3PO` are all appropiate choices of prefixes, just take note of the casing.
+* Prefix: We include this prefix so incase there are multiple people working on one account there won't be any collisions. This will be a unique string of characters that you choose. A simple and short prefix is the best choice. For example, `ENV01`, `R2D2`, `C3PO` are all appropiate choices of prefixes, it is the easiest and simplest to have your prefix be all UPPERCASE.
 * Resource: This is the given resource name that the documentation gives it.
 
 ## TASK 1: Launching our Lambda Functions and Dynamo DB Table
@@ -114,9 +114,9 @@ Here are a few notes about this shell script:
 ### STEP 1: Create WebSocket
 1. Navigate to the API Gateway console 
 <a href="https://console.aws.amazon.com/apigateway/home" target="_blank">here</a>.
-2. Depending on the state of your account you can find a **Create API** or **Get Started** Button. Click on the one that you see and you are going to be take a create API page.
+2. Depending on the state of your account you can find a **Create API** or **Get Started** Button. Click on the one that you see and you are going to be taken to a create API page.
     1. Press the **WebSocket** radio button for **Choose the Protocol**.
-    2. For **API name** put, `[Prefix]chatroom-websocket`
+    2. For **API name** put, `[Prefix]Chatroom-WebSocket` (Take note of Casing)
     3. For **Route Selection Expression** enter `$request.body.action` 
        *Note: If you want to learn more about routes and what they do click on the **Learn More** button next to the input box*
     4. For Description enter, **WebSocket for a Chatroom web page**.
@@ -131,15 +131,11 @@ Here are a few notes about this shell script:
 5. Click on **Next: Tags** and then **Next: Review**
 6. For role name enter, `[Prefix]WebSocketAPIRole`, then click **Create**. (Make sure the Prefix is all caps)
 7. Confirm the Role was made by clicking on it.
-8. Now we need to add an line policy so our WebSocket can invoke lambda functions
-    1. Go to the repository and find the directory `websocket-sandbox/resources/aws-utils/APIGateway`
-    2. Copy the file **role.json**
-    3. Go back to the **IAM** webpage and click on the Role we just created.
-    4. Click on **+ Add inline policy** 
-    5. Click **JSON** and then paste into the editor.
-    6. Click **review changes**
-    7. For the name put **Custom-Inline-Policy** and then press **Save changes**
-8. Copy the **Role ARN** or keep this info handy. We will be using it very shortly.
+8. Now we need to give this role permission to Invoke our lambda functions
+    1. Click **Attach Policies**
+    2. Search `AWSLambdaRole` and select it.
+    3. Click, **Attach Policy**
+9. Copy the **Role ARN** or keep this info handy. We will be using it very shortly.
 
 ### STEP 3: Add a Messaging Route
 1. Head back to the Dashboard of your WebSocket
@@ -158,7 +154,7 @@ While still on the page thats titled *Provide information about the target backe
 ### STEP 5: Deploying the WebSocket
 1. Click on the **Actions** dropdown, and select **Deploy API**
 2. For the **Deployment Stage** enter click on **[New Stage]**
-    1. For **Stage Name** enter, **development**
+    1. For **Stage Name** enter, **production**
     2. You can leave the descriptions blank, or enter what you like.
     3. Press **Deploy**
 3. Keep track of the **WebSocket URL** this is used in our local code.
@@ -173,7 +169,7 @@ source FastFixSimple.sh [Prefix]
 ## TASK 3: Adjusting Permissions for [Prefix]SendMessage
 1. Navigate to the IAM dashboard <a href="https://console.aws.amazon.com/iam/home" target="_blank">here</a>.
 2. Click on **Roles**
-3. Find the **Role** name `[Prefix]-stack-DispatchRole`
+3. Find the **Role** name `[Prefix]-PreLab-WebSocket-Stack-DispatchRole`
 4. Click on it
     1. Click **Add inline policy**
     2. Click **JSON**
@@ -197,12 +193,12 @@ source FastFixSimple.sh [Prefix]
 *Note: This task is completed using a **Google Chrome Browser**, and the lab has only been tested using **Google Chrome** and **Firefox** please be aware that some performance issues may arise if using other browsers than these.*
 ### STEP 1: Configure Websocket on the UI
 1. On your Cloud9 Environment navigate to: websocket-sandbox/chatroom/awsconfig.js
-2. Under the **AWS_CONFIG** for the key **websocket** enter the Websocket URL. This can be found by going to our WebSocket on API Gateway and clicking **Stages** and then **development** (If you did the **FastFix in Task 2, the URL will be in the terminal)
+2. Under the **AWS_CONFIG** for the key **websocket** enter the Websocket URL. This can be found by going to our WebSocket on API Gateway and clicking **Stages** and then **development** (If you did the **FastFix** in Task 2, the URL will be in the terminal)
 
 ### STEP 2: Test UI Functionality
 1. On a browser on your **Cloud9** Environment open `websocket-sandbox/chatroom/index.html`
 2. **Preview** this file in **Cloud9** by pressing the **Preview** button located on a toolbar next to **Run**. 
-3. Click the icon located on the top right of the preview. If you drag your mouse over it a message will read **Pop out into new window** click this.
+3. Click the icon located on the top right of the preview of the web page. If you drag your mouse over it a message will read **Pop out into new window** click this.
 4. You can copy the **URL** in the browser and open multiple tabs to simulate multiple people in the ChatRoom.
 4. The moment we have been waiting for, sending and receiving messages.
     1. Since this is the basic chatroom, we did not introduce the ability for custom names, or the creation of joining chatrooms. If you are interested in doing this take a look at the **Extended Lab** which walks through how to do this. To make sure that our UI knows we are in a *Simple Mode*:
@@ -336,32 +332,7 @@ Take some time and read over the code for each function. They either perform som
     </details>
 8. For the name put, **Custom-Inline-Policy** (since these are inline policies and only in the scope of each respective role there will not be any *naming* overlap)
 
-
-### STEP 3: Update our old Lambda Functions' Permissions
-We also need to go back and edit some of our permissions to some of our lmabda functions. The two that we need to go back and edit are **Disconnect** and **SendMessage**.
-1. Go to the lambda dashboard.
-2. Select the lambda function you want to alter.
-3. Scroll down to **Execution Role** and press the link to the role name.
-4. Click on the role with the policy type **inline policy** This should have a drop down menu appear:
-5. Click **Edit Policy**
-6. Click **JSON**
-7. Input updated permissions:
-    1. On your Cloud9 Environment, find the correct directory for the function you are working with, labeled above.
-    2. Copy the **role-extended.json** and paste into the editor
-    
-    *Note: For Dispatch you are only adding one more resource, which is the newly created DynamoDB table. Copying and pasting may not be the quickest way to update this, instead I suggest changing the resource to be:*
-    ```javascript
-    "Resource": [
-        "*"
-    ]
-    ```
-    *But this does give access to all DynamoDB Tables.*
-8. Click **Review Policyy**
-9. Finally Click **Save Changes**
-
-*Note: You must re-enter the custom ARNs into the new policies for newly made functions and revised policies. This **WILL** cause issues if this isnt configured properly.*
-
-### STEP 4: Update our old Lambda Functions' Environment Variables
+### STEP 3: Update our old Lambda Functions' Environment Variables
 1. For the lambda function `[Prefix]Disconnect` and `[Prefx]Dispatch` navigate back to the lambda functions' dashboard.
 2. Scroll down to the **Environment Variables** section. 
 3. Add another Environment variable:
