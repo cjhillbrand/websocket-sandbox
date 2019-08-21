@@ -163,7 +163,7 @@ While still on the page thats titled *Provide information about the target backe
 1. Create the Role for the API. (Task 2; Step 2) We need to do this because Cloud9 does not have the permission to manipulate IAM roles from the CLI.
 2. Make sure that you have ran `deployLambdas.sh` and you have finished the previous step, then you can run:
 ```
-source FastFixSimple.sh [Prefix]
+source FastFixSimpleLab.sh [Prefix]
 ```
 *Note: You will still have to complete **Task 3** and **Task 4** since that is out of the scope of the CLI*
 ## TASK 3: Adjusting Permissions for [Prefix]SendMessage
@@ -357,16 +357,14 @@ Take some time and read over the code for each function. They either perform som
 ```
 source FastFixExtended.sh [Prefix]
 ```
-2. Complete Task 2; Step 3. (Cloud9 AWS CLI still will not let us adjust permissions)
 
 That's it! Now your chatroom has full functional chatrooms and user names!
 
 # Cleaning Up
-1. Delete all Lambda functions in the Lambda dashboards 
-2. Delete all roles associated with the lambda functions **AND** the role attached to API Gateway
-3. Delete the WebSocket from API Gateway
-4. Delete all tables from DynamoDB.
-5. Delete your Cloud9 environment
+1. Delete the role associated with the **Send Message** Role. 
+2. Delete the WebSocket deployed on API Gateway.
+2. Go to Cloud formation and delete any stack associated with this lab.  
+3. Delete your Cloud9 environment
 
 # Deploying with SAM CLI
 *Note: The below instructions only deploy the **Simple** stack, comparable to the infrastructure set up in the **Simple Lab**. If you want to deploy the full stack replace the file **template-simple.yml** to **template-full.yml** in **STEP 4***
